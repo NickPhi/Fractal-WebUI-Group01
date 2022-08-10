@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Alarm settings</title>
+    <style>
+        .button {
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 42px;
+
+        cursor: pointer;
+        width:922px;  /* Screen resolution: 1024px */
+        height:80px; /* Screen resolution: 600px */
+    }
+    .button1 {background-color: #008CBA;} /* Blue */
+  </style>
+</head>
+<body>
+<h1>Set A Time Hour, Minute, PM or AM</h1>
+<form action="{{ url_for('alarm_settings') }}" method = "post">
+    <input type="time" name="set-time" style="height:300px;font-size:150pt;"><br /><br />
+    <button type="submit" class="button button1">Set time & Return</button></a>
+</form>
+</body>
+</html>

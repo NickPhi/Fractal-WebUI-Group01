@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Home Page{% endblock %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container">
+   {{ divme }}
+    <form action="{{ url_for('index') }}" method="post">
+        <input type="hidden" name="command" value="ON">
+        <button class="button button1">Turn on</button>
+    </form>
+    <iframe class="home-message" src="https://www.metacafebliss.com" title="Iframe Example"></iframe>
+    <form action="{{ url_for('index') }}" method="post">
+        <input type="hidden" name="command" value="OFF">
+        <button class="button button2">Turn off</button>
+    </form>
+    <form action="{{ url_for('index') }}" method="post">
+        <input type="hidden" name="command" value="{{ Timer_State }}">
+        <button class="button button4">Timer ON/OFF</button>
+    </form>
+    <form action="{{ url_for('index') }}" method="post">
+        <input type="hidden" name="command" value="{{ Alarm_State }}">
+        <button class="button button5">Alarm <br>ON/OFF</button>
+    </form>
+    <form action="{{ url_for('index') }}" method="post">
+        <input type="hidden" name="command" value="Settings">
+        <button class="button button6">Settings</button>
+    </form>
+    <button class="button button7" onclick="location.href='{{ url_for('timer_settings') }}';">Timer Settings</button>
+    <button class="button button8" onclick="location.href='{{ url_for('alarm_settings') }}';">Alarm Settings</button>
+    <button class="button button9" onclick="location.href='{{ url_for('alarm_settings') }}';">Advanced Settings</button>
+</div>
+{% endblock %}
