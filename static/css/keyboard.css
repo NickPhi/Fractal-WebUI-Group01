@@ -14,7 +14,7 @@
 	z-index: 16001;
 }
 .ui-keyboard div {
-	font-size: 2.2em;
+	font-size: 1.8em;
 }
 .ui-keyboard[contenteditable] {
 	white-space: pre;
