@@ -88,15 +88,19 @@ def alarm_settings():
 
 def wifi_connected():
     print("internet check")
-    req = requests.get('http://clients3.google.com/generate_204')
-    if req.status_code != 204:
-        req = requests.get('http://google.com/')
-        if req != 200:
-            return False
-        else:  # double check
+    try:
+        req = requests.get('http://clients3.google.com/generate_204')
+        if req.status_code != 204:
+            req = requests.get('http://google.com/')
+            if req != 200:
+                return False
+            else:  # double check
+                return True
+        else:
             return True
-    else:
-        return True
+    except:
+        print("internet issue")
+        return False
 
 
 @app.route('/wifi', methods=['GET', 'POST'])
