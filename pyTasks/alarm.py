@@ -35,10 +35,10 @@ def alarm_start():
     if isValidTime(user_time):
         t = time.strptime(user_time, "%H:%M")
         alarm_time = time.strftime("%I:%M:%S %p", t)
-        print(f"Setting alarm for {alarm_time}...")
+        print("Setting alarm for " + alarm_time)
     else:
         alarm_time = '10:10:10 AM'
-        print(f"Setting alarm for {alarm_time}...")
+        print("Setting alarm for " + alarm_time)
 
     alarm_hour = alarm_time[0:2]
     alarm_min = alarm_time[3:5]
@@ -61,4 +61,4 @@ def alarm_start():
                     if alarm_sec == current_sec:
                         print("Wake Up!")
                         break
-    print("Stop!")
+    print("Alarm stop")

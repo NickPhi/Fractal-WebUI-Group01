@@ -1,0 +1,11 @@
+Date
+User
+Times Used:
+On Time:
+Alarm: (times used)
+Timer: (times used)
+IP Address
+
+if they have exited the chromium window
+if a keyboard was plugged in or usb
+if a terminal was opened up
