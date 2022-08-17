@@ -3,6 +3,7 @@ import smtplib
 import ssl
 import threading
 import time
+import json
 
 import requests
 from flask import Flask, render_template, request
@@ -17,6 +18,20 @@ t1 = threading.Thread  # alarm thread
 t2 = threading.Thread  # timer thread
 timer_state = "null"  # Global Variable
 alarm_state = "null"  # Global Variable
+PATH = "https://metacafebliss.com/deep/users/"
+PATH_ALT = "https://metacafebliss.com/deep/"
+USER_GROUP = "01"
+USER_NAME = "01_001"
+ADMIN_EMAIL = "null"
+EM_DATA = "null"
+PS_DATA = "null"
+AUTHENTICATION = "null"
+UPDATE_GROUP_OR_USER = "null"
+GROUP_VERSION = "null"
+USER_VERSION = "null"
+GIT_GROUP = "null"
+GIT_USER = "null"
+COMMAND = "null"
 
 
 # GLOBALS
@@ -24,27 +39,18 @@ alarm_state = "null"  # Global Variable
 
 @app.route('/')
 def index():
-    if wifi_connected():
+    get_data()
+    if wifi_check():
+        download_variables()
         if user_authentication():
             return render_template('index.html')
         else:
-            print("u outta luck")
-            os.system('sudo reboot now')
+            print("authentication failed")  # Start new thread
+            t3 = threading.Thread(target=restart_15)
+            t3.start()
+            return render_template('payment.html')
     else:
         return render_template('wifi.html')
-
-
-def user_authentication():
-    print("User Authentication check")
-    username = "myPI1"
-    req = requests.get('http://metacafebliss.com/deep/users.html')
-    approve1 = req.text
-    if approve1.__contains__(username):
-        print("Pass")
-        return True
-    else:
-        print("FAIL")
-        return False
 
 
 @app.route('/turnon')
@@ -86,7 +92,7 @@ def alarm_settings():
         return render_template('index.html')
 
 
-def wifi_connected():
+def wifi_check():
     print("internet check")
     try:
         req = requests.get('http://clients3.google.com/generate_204')
@@ -103,7 +109,35 @@ def wifi_connected():
         return False
 
 
-@app.route('/wifi', methods=['GET', 'POST'])
+def download_variables():
+    global PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
+        GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, COMMAND
+    req = requests.get(PATH + USER_NAME + '/user_settings.json')
+    gru = requests.get(PATH_ALT + USER_GROUP + '/group.json')
+    j_ = req.json()
+    i_ = gru.json()
+    ADMIN_EMAIL = j_['ADMIN_EMAIL']
+    AUTHENTICATION = j_['AUTHENTICATION']
+    UPDATE_GROUP_OR_USER = j_['UPDATE_GROUP_OR_USER']
+    GROUP_VERSION = i_['GROUP_VERSION']
+    USER_VERSION = j_['USER_VERSION']
+    GIT_GROUP = i_['GIT_GROUP']
+    GIT_USER = j_['GIT_USER']
+    COMMAND = j_['COMMAND']
+
+
+def user_authentication():
+    print("User Authentication check")
+    global AUTHENTICATION
+    if AUTHENTICATION == '1':
+        print("Pass")
+        return True
+    else:
+        print("FAIL")
+        return False
+
+
+@app.route('/wifi.html', methods=['GET', 'POST'])
 def wifi():
     if request.method == 'GET':
         return render_template('wifi.html')
@@ -114,7 +148,7 @@ def wifi():
         with open('/etc/network/interfaces', 'w') as file:
             content = \
                 'source-directory /etc/network/interfaces.d\n\n' + \
-                'auto lo\n\n' + \
+                'auto lo\n' + \
                 'iface lo inet loopback\n' + \
                 "iface eth0 inet dhcp\n" + \
                 'allow-hotplug wlan0\n' + \
@@ -125,38 +159,71 @@ def wifi():
                 'wpa-psk "' + password + '"\n'
             file.write(content)
     print("Write successful. Rebooting now.")
-    time.sleep(2)
-    os.system('sudo reboot now')
+    restart_15()
+    return render_template('system_reboot.html')
 
 
 def update_check():
-    req = requests.get('http://clients3.google.com/generate_204')
-    revision_number = req.text
-    fp = open('user_alarm_set.txt', 'r')
-    current_revision = fp.read()
-    fp.close()
-    # compare the revision number
-    # if new revision number
-    # git clone PyApp
-    # rename PyApp to PyApp-1
-    # edit service file..
-    # sudo reboot
-    return
+    print("Update Start")
+    global UPDATE_GROUP_OR_USER, GROUP_VERSION, USER_VERSION, \
+        GIT_GROUP, GIT_USER
+    if UPDATE_GROUP_OR_USER == "0":  # Group Update
+        # Get current version
+        fp = open('version_group.txt', 'r')
+        current_version = fp.read()
+        fp.close()
+        if int(current_version) < int(GROUP_VERSION):
+            # Compare current version and gathered version
+            print("Updating version: group")
+            # write all required information to the file
+            write_update(GIT_GROUP, GROUP_VERSION)
+            # lastly update version number
+            fp = open('version_group.txt', 'w')
+            fp.write(GROUP_VERSION)
+            fp.close()
+            restart_15()
+            return render_template('system_reboot.html')
+    else:  # User Update
+        fp = open('version_user.txt', 'r')
+        current_version = fp.read()
+        fp.close()
+        if int(current_version) < int(USER_VERSION):
+            print("Updating version: user")
+            # write all required information to the file
+            write_update(GIT_USER, GROUP_VERSION)
+            # lastly update version number
+            fp = open('version_group.txt', 'w')
+            fp.write(GROUP_VERSION)
+            fp.close()
+            restart_15()
+            return render_template('system_reboot.html')
 
 
-def git_clone():
-    # git clone ..
-    # rename
-    return
+def write_update(git, version_num):
+    os.system('cd')
+    os.system('git clone ' + git)
+    s_list = git.split("/")
+    prj_name = s_list[4]  # Assuming git URL separated 5 times by "/"
+    with open('/lib/systemd/system/webserver.service', 'w') as file:
+        content = \
+            '''
+            [Unit]
+            Description=WebServer
+            After=multi-user.target
 
+            [Service]
+            Environment=DISPLAY=:0.0
+            Environment=XAUTHORITY=/home/pi/.Xauthority
+            Type=simple
+            ExecStart=/usr/bin/python3 /home/pi/''' + prj_name + version_num + '''/app.py
+            Restart=on-abort
+            User=pi
+            Group=pi
 
-def edit_service_file(version):
-    # cd /lib/systemd/system/
-    # sudo nano webserver.service
-    return
-
-
-# if the program was turned off in the middle of writing to a file?
+            [Install]
+            WantedBy=multi-user.target    
+            '''
+        file.write(content)
 
 
 def send_email():
@@ -168,7 +235,7 @@ def send_email():
         password = input("Type your password and press enter:")
         message = """\
         Subject: Hi there
-    
+
         This message is sent from Python."""
 
         context = ssl.create_default_context()
@@ -180,6 +247,13 @@ def send_email():
             server.sendmail(sender_email, receiver_email, message)
     except:
         abc = 1
+
+
+# if the program was turned off in the middle of writing to a file?
+
+def restart_15():
+    time.sleep(15)
+    os.system('sudo reboot now')
 
 
 @app.route('/alarm')
@@ -236,11 +310,29 @@ def alarm_thread(mode):
         t1.join()
 
 
+def get_data():
+    global USER_GROUP, USER_NAME, EM_DATA, PS_DATA
+    f = open('home/pi/data.json')
+    data = json.load(f)
+    f.close()
+    # Load Main User Data
+    USER_GROUP = data['USER_GROUP']
+    USER_NAME = data['USER_NAME']
+    EM_DATA = data['EM_DATA']
+    PS_DATA = data['PS_DATA']
+
+
+def run_this_command():
+    global COMMAND
+    if COMMAND != 0:
+        os.system(COMMAND)
+
+
 if __name__ == "__main__":
     app.run(debug=True)
 
 # Notes to self:
 # check all css/js links for any that need internet and download them
 # check for corrupted files?
-#
+# try everything so if there is errors
 #
