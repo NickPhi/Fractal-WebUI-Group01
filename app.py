@@ -20,11 +20,11 @@ timer_state = "null"  # Global Variable
 alarm_state = "null"  # Global Variable
 PATH = "https://metacafebliss.com/deep/users/"
 PATH_ALT = "https://metacafebliss.com/deep/"
-USER_GROUP = "01"
-USER_NAME = "01_001"
+USER_GROUP = "01"  # temp remove for production
+USER_NAME = "01_001"  # temp remove for production
 ADMIN_EMAIL = "null"
-EM_DATA = "null"
-PS_DATA = "null"
+EM_DATA = "pos.device.email.1@gmail.com"  # temp remove for production
+PS_DATA = "inqtysziizuofirt"  # temp remove for production
 AUTHENTICATION = "null"
 UPDATE_GROUP_OR_USER = "null"
 GROUP_VERSION = "null"
@@ -39,18 +39,26 @@ COMMAND = "null"
 
 @app.route('/')
 def index():
-    get_data()
+    global PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
+        GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, COMMAND, EM_DATA, PS_DATA
+    # get_data() - seems to work I need a message system for debugging
     if wifi_check():
         download_variables()
         if user_authentication():
-            return render_template('index.html')
+            # for testing purposes get string variables
+            test_string = "Path=" + PATH + " | " + "User Group=" + USER_GROUP + " | " + "Username=" + USER_NAME + " | " \
+                         + "Admin email=" + ADMIN_EMAIL + " | " + "Authentication=" + AUTHENTICATION + " | " + \
+                         "Group or user=" + UPDATE_GROUP_OR_USER + " | " + "Group version=" + GROUP_VERSION + " | " + \
+                         "User version=" + USER_VERSION + " | " + "Git Group=" + GIT_GROUP + " | " + "Git user=" + \
+                         GIT_USER + " | " + "Command=" + COMMAND + " | " + "EM=" + EM_DATA + " | " + "PS=" + PS_DATA
+
+            return render_template('index.html', response=test_string)
         else:
             print("authentication failed")  # Start new thread
-            t3 = threading.Thread(target=restart_15)
-            t3.start()
+            restart_15()
             return render_template('payment.html')
     else:
-        return render_template('wifi.html')
+        return render_template('wifi.html', response="failed index wifi check")
 
 
 @app.route('/turnon')
@@ -66,47 +74,6 @@ def turnoff():
 @app.route('/settings.html')
 def settings():
     return render_template("settings.html")
-
-
-@app.route('/timer_settings', methods=['GET', 'POST'])
-def timer_settings():
-    if request.method == 'GET':
-        return render_template('timer_settings.html')
-    if request.method == 'POST':
-        data = request.form
-        fp = open('user_timer_set.txt', 'w')
-        fp.write(data['set-time'])
-        fp.close()
-        return render_template('index.html')
-
-
-@app.route('/alarm_settings', methods=['GET', 'POST'])
-def alarm_settings():
-    if request.method == 'GET':
-        return render_template('alarm_settings.html')
-    if request.method == 'POST':
-        data = request.form
-        fp = open('user_alarm_set.txt', 'w')
-        fp.write(data['set-time'])
-        fp.close()
-        return render_template('index.html')
-
-
-def wifi_check():
-    print("internet check")
-    try:
-        req = requests.get('http://clients3.google.com/generate_204')
-        if req.status_code != 204:
-            req = requests.get('http://google.com/')
-            if req != 200:
-                return False
-            else:  # double check
-                return True
-        else:
-            return True
-    except:
-        print("internet issue")
-        return False
 
 
 def download_variables():
@@ -140,7 +107,7 @@ def user_authentication():
 @app.route('/wifi.html', methods=['GET', 'POST'])
 def wifi():
     if request.method == 'GET':
-        return render_template('wifi.html')
+        return render_template('wifi.html', response="simple GET command")
     if request.method == 'POST':
         data = request.form
         ssid = data['wifi_ssid']
@@ -160,7 +127,7 @@ def wifi():
             file.write(content)
     print("Write successful. Rebooting now.")
     restart_15()
-    return render_template('system_reboot.html')
+    return render_template('system_reboot.html', response="wifi entered now rebooting")
 
 
 def update_check():
@@ -181,8 +148,8 @@ def update_check():
             fp = open('version_group.txt', 'w')
             fp.write(GROUP_VERSION)
             fp.close()
-            restart_15()
-            return render_template('system_reboot.html')
+            # restart_15()
+            return render_template('system_reboot.html', response='Updated group version to ' + GROUP_VERSION)
     else:  # User Update
         fp = open('version_user.txt', 'r')
         current_version = fp.read()
@@ -195,8 +162,8 @@ def update_check():
             fp = open('version_group.txt', 'w')
             fp.write(GROUP_VERSION)
             fp.close()
-            restart_15()
-            return render_template('system_reboot.html')
+            # restart_15()
+            return render_template('system_reboot.html', response='Updated user version to ' + GROUP_VERSION)
 
 
 def write_update(git, version_num):
@@ -226,34 +193,82 @@ def write_update(git, version_num):
         file.write(content)
 
 
-def send_email():
+def email_send(text):
+    global EM_DATA, PS_DATA
+    port = 587
+    smtp_server = "smtp.gmail.com"
+    print(EM_DATA)
+    print(PS_DATA)
+    sender_email = EM_DATA
+    receiver_email = EM_DATA
+    password = PS_DATA
+    message = text
+
+    context = ssl.create_default_context()
+    with smtplib.SMTP(smtp_server, port) as server:
+        server.ehlo()  # Can be omitted
+        server.starttls(context=context)
+        server.ehlo()  # Can be omitted
+        server.login(sender_email, password)
+        server.sendmail(sender_email, receiver_email, message)
+    print("email sent")
+    # generate error id
+
+
+def wifi_check():
+    print("internet check")
     try:
-        port = 587  # For starttls
-        smtp_server = "smtp.gmail.com"
-        sender_email = "my@gmail.com"
-        receiver_email = "your@gmail.com"
-        password = input("Type your password and press enter:")
-        message = """\
-        Subject: Hi there
-
-        This message is sent from Python."""
-
-        context = ssl.create_default_context()
-        with smtplib.SMTP(smtp_server, port) as server:
-            server.ehlo()  # Can be omitted
-            server.starttls(context=context)
-            server.ehlo()  # Can be omitted
-            server.login(sender_email, password)
-            server.sendmail(sender_email, receiver_email, message)
+        req = requests.get('http://clients3.google.com/generate_204')
+        if req.status_code != 204:
+            req = requests.get('ghttp://google.com/')
+            if req != 200:
+                return False
+            else:  # double check
+                return True
+        else:
+            return True
     except:
-        abc = 1
+        print("internet issue")
+        # render error message
+        return False
+
+
+@app.route('/timer_settings', methods=['GET', 'POST'])
+def timer_settings():
+    if request.method == 'GET':
+        return render_template('timer_settings.html')
+    if request.method == 'POST':
+        data = request.form
+        fp = open('user_timer_set.txt', 'w')
+        fp.write(data['set-time'])
+        fp.close()
+        return render_template('index.html', response="timer settings set")
+
+
+@app.route('/alarm_settings', methods=['GET', 'POST'])
+def alarm_settings():
+    if request.method == 'GET':
+        return render_template('alarm_settings.html')
+    if request.method == 'POST':
+        data = request.form
+        fp = open('user_alarm_set.txt', 'w')
+        fp.write(data['set-time'])
+        fp.close()
+        return render_template('index.html', response="alarm settings set")
 
 
 # if the program was turned off in the middle of writing to a file?
 
+
 def restart_15():
+    t3 = threading.Thread(target=restart)
+    t3.start()
+
+
+def restart():
     time.sleep(15)
     os.system('sudo reboot now')
+    # try, catch, kill thread, display error
 
 
 @app.route('/alarm')
