@@ -42,7 +42,7 @@ def index():
     global PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
         GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, COMMAND, EM_DATA, PS_DATA
 
-    # get_data()
+    get_data()
     if wifi_check():
         download_variables()
         if user_authentication():
@@ -52,7 +52,7 @@ def index():
                           "Group or user=" + UPDATE_GROUP_OR_USER + " | " + "Group version=" + GROUP_VERSION + " | " + \
                           "User version=" + USER_VERSION + " | " + "Git Group=" + GIT_GROUP + " | " + "Git user=" + \
                           GIT_USER + " | " + "Command=" + COMMAND + " | " + "EM=" + EM_DATA + " | " + "PS=" + PS_DATA
-
+            update_check()
             return render_template('index.html', response=test_string)
         else:
             print("authentication failed")  # Start new thread
