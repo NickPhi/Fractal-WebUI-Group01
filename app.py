@@ -101,7 +101,12 @@ def update_check():
             # Compare current version and gathered version
             print("Updating version: group")
             # write all required information to the file
-            write_update(GIT_GROUP, GROUP_VERSION)
+            s_list = GIT_GROUP.split("/")
+            prj_name = s_list[4]  # Assuming git URL separated 5 times by "/"
+            NEW_PRJ_PATH = XPATH + prj_name + '_' + GROUP_VERSION  # USER_VERSION is a number
+            write_update(GIT_GROUP, NEW_PRJ_PATH)
+            # update Json file in new path
+            updateJsonFile("GROUP_UPDATE_VERSION", GROUP_VERSION, NEW_PRJ_PATH + "/application_data.json")
             # restart_15()
             return render_template('system_reboot.html', response='Updated group version to ' + GROUP_VERSION)
     else:  # User Update
