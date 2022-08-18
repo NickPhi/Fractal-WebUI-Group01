@@ -44,7 +44,6 @@ def index():
     get_data()
     if wifi_check():
         download_variables()
-        run_this_command()
         if user_authentication():
             # for testing purposes get string variables
             test_string = "Path=" + PATH + " | " + "User Group=" + USER_GROUP + " | " + "Username=" + USER_NAME + " | " \
@@ -338,6 +337,7 @@ def get_data():
     PS_DATA = data['PS_DATA']
 
 
+# tested: works
 def run_this_command():
     print("running command")
     global COMMAND
