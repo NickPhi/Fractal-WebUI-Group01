@@ -18,6 +18,7 @@ t1 = threading.Thread  # alarm thread
 t2 = threading.Thread  # timer thread
 timer_state = "null"  # Global Variable
 alarm_state = "null"  # Global Variable
+XPATH = '/home/pi'  # Path to /data.json
 PATH = "https://metacafebliss.com/deep/users/"
 PATH_ALT = "https://metacafebliss.com/deep/"
 USER_GROUP = "01"  # temp remove for production
@@ -249,8 +250,8 @@ def alarm_settings():
 
 
 def get_data():
-    global USER_GROUP, USER_NAME, EM_DATA, PS_DATA
-    f = open('home/pi/data.json')
+    global USER_GROUP, USER_NAME, EM_DATA, PS_DATA, XPATH
+    f = open(XPATH + '/data.json')
     data = json.load(f)
     f.close()
     # Load Main User Data
