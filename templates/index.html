@@ -8,7 +8,7 @@
 
 {% block content %}
 <div class="container">
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script type="text/javascript" src="text/javascript" src="{{ url_for('static', filename='js/2.1.3_jquery.min.js') }}"></script>
     <script type=text/javascript> $(function() { $("#onbutton").click(function (event) { $.getJSON('/turnon', { },
         function(data) { }); return false; }); });
     </script>
