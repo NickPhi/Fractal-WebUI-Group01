@@ -280,19 +280,19 @@ def run_this_command():  # works
 
 
 def updateJsonFile(Key, Value):
-    jsonFile = open("application_data.json", "r")
+    jsonFile = open(os.path.dirname(os.path.abspath(__file__)) + "/application_data.json", "r")
     data = json.load(jsonFile)  # Read the JSON into the buffer
     jsonFile.close()
     # Update Key & Value
     data[Key] = Value
     # Save changes to JSON file
-    jsonFile = open("application_data.json", "w+")
+    jsonFile = open(os.path.dirname(os.path.abspath(__file__)) + "/application_data.json", "w+")
     jsonFile.write(json.dumps(data))
     jsonFile.close()
 
 
 def readJsonValueFromKey(Key):
-    f = open('application_data.json')
+    f = open(os.path.dirname(os.path.abspath(__file__)) + "/application_data.json")
     data = json.load(f)
     f.close()
     return data[Key]
