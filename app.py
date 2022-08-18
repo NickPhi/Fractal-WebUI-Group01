@@ -93,7 +93,7 @@ def user_authentication():
 def update_check():
     print("Update Start")
     global UPDATE_GROUP_OR_USER, GROUP_VERSION, USER_VERSION, \
-        GIT_GROUP, GIT_USER
+        GIT_GROUP, GIT_USER, XPATH
     if UPDATE_GROUP_OR_USER == "0":  # Group Update
         # Get current version
         current_version = readJsonValueFromKey("GROUP_UPDATE_VERSION")
@@ -108,18 +108,19 @@ def update_check():
         current_version = readJsonValueFromKey("USER_UPDATE_VERSION")
         if int(current_version) < int(USER_VERSION):
             print("Updating version: user")
-            # write all required information to the file
-            write_update(GIT_USER, USER_VERSION)
+            # git
+            s_list = GIT_USER.split("/")
+            prj_name = s_list[4]  # Assuming git URL separated 5 times by "/"
+            NEW_PRJ_PATH = XPATH + prj_name + '_' + USER_VERSION  # USER_VERSION is a number
+            write_update(GIT_USER, NEW_PRJ_PATH)
+            # update Json file in new path
+            updateJsonFile("USER_UPDATE_VERSION", USER_VERSION, NEW_PRJ_PATH + "/application_data.json")
             # restart_15()
             return render_template('system_reboot.html', response='Updated user version to ' + USER_VERSION)
 
 
-def write_update(git, version_num):
-    global XPATH
+def write_update(git, NEW_PRJ_PATH):
     os.system('cd')
-    s_list = git.split("/")
-    prj_name = s_list[4]  # Assuming git URL separated 5 times by "/"
-    NEW_PRJ_PATH = XPATH + prj_name + '_' + version_num
     os.system('git clone ' + git + ' ' + NEW_PRJ_PATH)
     with open('/lib/systemd/system/webserver.service', 'w') as file:
         content = \
@@ -141,7 +142,7 @@ def write_update(git, version_num):
             WantedBy=multi-user.target    
             '''
         file.write(content)
-    updateJsonFile("USER_UPDATE_VERSION", version_num, NEW_PRJ_PATH + "/application_data.json")
+    return NEW_PRJ_PATH
 
 
 def email_send(text):
