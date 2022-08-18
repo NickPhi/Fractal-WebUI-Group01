@@ -1,6 +1,6 @@
+import json
 from datetime import datetime  # To set date and time
 import time
-import os
 import re
 
 stop_threads = False
@@ -20,16 +20,7 @@ def isValidTime(time):
 
 
 def alarm_start():
-    #  try for the path
-    if os.path.isfile('user_alarm_set.txt'):
-        try:
-            fp = open('user_alarm_set.txt', 'r')
-            user_time = fp.read()
-            fp.close()
-        except FileNotFoundError:
-            print("Please check the path")
-    else:
-        user_time = '10:10'
+    user_time = readJsonValueFromKey("USER_ALARM")
 
     #  check for correct format
     if isValidTime(user_time):
@@ -62,3 +53,10 @@ def alarm_start():
                         print("Wake Up!")
                         break
     print("Alarm stop")
+
+
+def readJsonValueFromKey(Key):
+    f = open('application_data.json')
+    data = json.load(f)
+    f.close()
+    return data[Key]

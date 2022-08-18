@@ -41,22 +41,24 @@ COMMAND = "null"
 def index():
     global PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
         GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, COMMAND, EM_DATA, PS_DATA
+
     # get_data()
     if wifi_check():
         download_variables()
         if user_authentication():
             # for testing purposes get string variables
             test_string = "Path=" + PATH + " | " + "User Group=" + USER_GROUP + " | " + "Username=" + USER_NAME + " | " \
-                         + "Admin email=" + ADMIN_EMAIL + " | " + "Authentication=" + AUTHENTICATION + " | " + \
-                         "Group or user=" + UPDATE_GROUP_OR_USER + " | " + "Group version=" + GROUP_VERSION + " | " + \
-                         "User version=" + USER_VERSION + " | " + "Git Group=" + GIT_GROUP + " | " + "Git user=" + \
-                         GIT_USER + " | " + "Command=" + COMMAND + " | " + "EM=" + EM_DATA + " | " + "PS=" + PS_DATA
+                          + "Admin email=" + ADMIN_EMAIL + " | " + "Authentication=" + AUTHENTICATION + " | " + \
+                          "Group or user=" + UPDATE_GROUP_OR_USER + " | " + "Group version=" + GROUP_VERSION + " | " + \
+                          "User version=" + USER_VERSION + " | " + "Git Group=" + GIT_GROUP + " | " + "Git user=" + \
+                          GIT_USER + " | " + "Command=" + COMMAND + " | " + "EM=" + EM_DATA + " | " + "PS=" + PS_DATA
 
             return render_template('index.html', response=test_string)
         else:
             print("authentication failed")  # Start new thread
             restart_15()
             return render_template('payment.html')
+        # It will cycle so best to turn itself off than restart
     else:
         return render_template('wifi.html', response="failed index wifi check")
 
@@ -76,23 +78,6 @@ def settings():
     return render_template("settings.html")
 
 
-def download_variables():
-    global PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
-        GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, COMMAND
-    req = requests.get(PATH + USER_NAME + '/user_settings.json')
-    gru = requests.get(PATH_ALT + USER_GROUP + '/group.json')
-    j_ = req.json()
-    i_ = gru.json()
-    ADMIN_EMAIL = j_['ADMIN_EMAIL']
-    AUTHENTICATION = j_['AUTHENTICATION']
-    UPDATE_GROUP_OR_USER = j_['UPDATE_GROUP_OR_USER']
-    GROUP_VERSION = i_['GROUP_VERSION']
-    USER_VERSION = j_['USER_VERSION']
-    GIT_GROUP = i_['GIT_GROUP']
-    GIT_USER = j_['GIT_USER']
-    COMMAND = j_['COMMAND']
-
-
 def user_authentication():
     print("User Authentication check")
     global AUTHENTICATION
@@ -104,66 +89,32 @@ def user_authentication():
         return False
 
 
-@app.route('/wifi.html', methods=['GET', 'POST'])
-def wifi():
-    if request.method == 'GET':
-        return render_template('wifi.html', response="simple GET command")
-    if request.method == 'POST':
-        data = request.form
-        ssid = data['wifi_ssid']
-        password = data['wifi_pass']
-        with open('/etc/network/interfaces', 'w') as file:
-            content = \
-                'source-directory /etc/network/interfaces.d\n\n' + \
-                'auto lo\n' + \
-                'iface lo inet loopback\n' + \
-                "iface eth0 inet dhcp\n" + \
-                'allow-hotplug wlan0\n' + \
-                'auto wlan0\n' + \
-                'auto wlan0\n' + \
-                'iface wlan0 inet dhcp\n' + \
-                'wpa-ssid "' + ssid + '"\n' + \
-                'wpa-psk "' + password + '"\n'
-            file.write(content)
-    print("Write successful. Rebooting now.")
-    restart_15()
-    return render_template('system_reboot.html', response="wifi entered now rebooting")
-
-
 def update_check():
     print("Update Start")
     global UPDATE_GROUP_OR_USER, GROUP_VERSION, USER_VERSION, \
         GIT_GROUP, GIT_USER
     if UPDATE_GROUP_OR_USER == "0":  # Group Update
         # Get current version
-        fp = open('version_group.txt', 'r')
-        current_version = fp.read()
-        fp.close()
+        current_version = readJsonValueFromKey("GROUP_UPDATE_VERSION")
         if int(current_version) < int(GROUP_VERSION):
             # Compare current version and gathered version
             print("Updating version: group")
             # write all required information to the file
             write_update(GIT_GROUP, GROUP_VERSION)
-            # lastly update version number
-            fp = open('version_group.txt', 'w')
-            fp.write(GROUP_VERSION)
-            fp.close()
+            # update version number
+            updateJsonFile("GROUP_UPDATE_VERSION", GROUP_VERSION)
             # restart_15()
             return render_template('system_reboot.html', response='Updated group version to ' + GROUP_VERSION)
     else:  # User Update
-        fp = open('version_user.txt', 'r')
-        current_version = fp.read()
-        fp.close()
+        current_version = readJsonValueFromKey("USER_UPDATE_VERSION")
         if int(current_version) < int(USER_VERSION):
             print("Updating version: user")
             # write all required information to the file
-            write_update(GIT_USER, GROUP_VERSION)
+            write_update(GIT_USER, USER_VERSION)
             # lastly update version number
-            fp = open('version_group.txt', 'w')
-            fp.write(GROUP_VERSION)
-            fp.close()
+            updateJsonFile("GROUP_UPDATE_VERSION", USER_VERSION)
             # restart_15()
-            return render_template('system_reboot.html', response='Updated user version to ' + GROUP_VERSION)
+            return render_template('system_reboot.html', response='Updated user version to ' + USER_VERSION)
 
 
 def write_update(git, version_num):
@@ -197,8 +148,6 @@ def email_send(text):
     global EM_DATA, PS_DATA
     port = 587
     smtp_server = "smtp.gmail.com"
-    print(EM_DATA)
-    print(PS_DATA)
     sender_email = EM_DATA
     receiver_email = EM_DATA
     password = PS_DATA
@@ -213,6 +162,23 @@ def email_send(text):
         server.sendmail(sender_email, receiver_email, message)
     print("email sent")
     # generate error id
+
+
+def download_variables():
+    global PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
+        GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, COMMAND
+    req = requests.get(PATH + USER_NAME + '/user_settings.json')
+    gru = requests.get(PATH_ALT + USER_GROUP + '/group.json')
+    j_ = req.json()
+    i_ = gru.json()
+    ADMIN_EMAIL = j_['ADMIN_EMAIL']
+    AUTHENTICATION = j_['AUTHENTICATION']
+    UPDATE_GROUP_OR_USER = j_['UPDATE_GROUP_OR_USER']
+    GROUP_VERSION = i_['GROUP_VERSION']
+    USER_VERSION = j_['USER_VERSION']
+    GIT_GROUP = i_['GIT_GROUP']
+    GIT_USER = j_['GIT_USER']
+    COMMAND = j_['COMMAND']
 
 
 def wifi_check():
@@ -233,15 +199,39 @@ def wifi_check():
         return False
 
 
+@app.route('/wifi.html', methods=['GET', 'POST'])
+def wifi():
+    if request.method == 'GET':
+        return render_template('wifi.html', response="simple GET command")
+    if request.method == 'POST':
+        data = request.form
+        ssid = data['wifi_ssid']
+        password = data['wifi_pass']
+        with open('/etc/network/interfaces', 'w') as file:
+            content = \
+                'source-directory /etc/network/interfaces.d\n\n' + \
+                'auto lo\n' + \
+                'iface lo inet loopback\n' + \
+                "iface eth0 inet dhcp\n" + \
+                'allow-hotplug wlan0\n' + \
+                'auto wlan0\n' + \
+                'auto wlan0\n' + \
+                'iface wlan0 inet dhcp\n' + \
+                'wpa-ssid "' + ssid + '"\n' + \
+                'wpa-psk "' + password + '"\n'
+            file.write(content)
+    print("Write successful. Rebooting now.")
+    restart_15()
+    return render_template('system_reboot.html', response="wifi entered now rebooting")
+
+
 @app.route('/timer_settings', methods=['GET', 'POST'])
 def timer_settings():
     if request.method == 'GET':
         return render_template('timer_settings.html')
     if request.method == 'POST':
         data = request.form
-        fp = open('user_timer_set.txt', 'w')
-        fp.write(data['set-time'])
-        fp.close()
+        updateJsonFile('USER_TIMER', data['set-time'])
         return render_template('index.html', response="timer settings set")
 
 
@@ -251,13 +241,23 @@ def alarm_settings():
         return render_template('alarm_settings.html')
     if request.method == 'POST':
         data = request.form
-        fp = open('user_alarm_set.txt', 'w')
-        fp.write(data['set-time'])
-        fp.close()
+        updateJsonFile('USER_ALARM', data['set-time'])
         return render_template('index.html', response="alarm settings set")
 
 
 # if the program was turned off in the middle of writing to a file?
+
+
+def get_data():
+    global USER_GROUP, USER_NAME, EM_DATA, PS_DATA
+    f = open('home/pi/data.json')
+    data = json.load(f)
+    f.close()
+    # Load Main User Data
+    USER_GROUP = data['USER_GROUP']
+    USER_NAME = data['USER_NAME']
+    EM_DATA = data['EM_DATA']
+    PS_DATA = data['PS_DATA']
 
 
 def restart_15():
@@ -269,6 +269,33 @@ def restart():
     time.sleep(15)
     os.system('sudo reboot now')
     # try, catch, kill thread, display error
+
+
+def run_this_command():  # works
+    print("running command")
+    global COMMAND
+    if COMMAND != '0':
+        print("command ran")
+        os.system(COMMAND)
+
+
+def updateJsonFile(Key, Value):
+    jsonFile = open("application_data.json", "r")
+    data = json.load(jsonFile)  # Read the JSON into the buffer
+    jsonFile.close()
+    # Update Key & Value
+    data[Key] = Value
+    # Save changes to JSON file
+    jsonFile = open("application_data.json", "w+")
+    jsonFile.write(json.dumps(data))
+    jsonFile.close()
+
+
+def readJsonValueFromKey(Key):
+    f = open('application_data.json')
+    data = json.load(f)
+    f.close()
+    return data[Key]
 
 
 @app.route('/alarm')
@@ -323,27 +350,6 @@ def alarm_thread(mode):
         time.sleep(0.1)
         pyTasks.alarm.stop_threads = True
         t1.join()
-
-
-def get_data():
-    global USER_GROUP, USER_NAME, EM_DATA, PS_DATA
-    f = open('home/pi/data.json')
-    data = json.load(f)
-    f.close()
-    # Load Main User Data
-    USER_GROUP = data['USER_GROUP']
-    USER_NAME = data['USER_NAME']
-    EM_DATA = data['EM_DATA']
-    PS_DATA = data['PS_DATA']
-
-
-# tested: works
-def run_this_command():
-    print("running command")
-    global COMMAND
-    if COMMAND != '0':
-        print("command ran")
-        os.system(COMMAND)
 
 
 if __name__ == "__main__":

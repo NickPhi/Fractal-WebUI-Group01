@@ -3,15 +3,7 @@
 
 <head>
     <title>{% block title %}{% endblock %}</title>
-    <script>
-    // When the user clicks on <div>, open the popup
-    function myFunction() {
-      var popup = document.getElementById("myPopup");
-      popup.classList.toggle("show");
-    }
 
-
-    </script>
     <style>
         .button {
         border: none;
@@ -49,7 +41,6 @@
         height:268px;
     }
     </style>
-
     <style>
      /* Popup container */
     .popup {
@@ -104,6 +95,7 @@
       to {opacity:1 ;}
     }
     </style>
+
     {% block head %}{% endblock %}
 </head>
 
