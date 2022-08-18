@@ -283,7 +283,7 @@ def updateJsonFile(Key, Value):
     jsonFile = open(os.path.dirname(os.path.abspath(__file__)) + "/application_data.json", "r")
     data = json.load(jsonFile)  # Read the JSON into the buffer
     jsonFile.close()
-    # Update Key & Value a
+    # Update Key & Value
     data[Key] = Value
     # Save changes to JSON file
     jsonFile = open(os.path.dirname(os.path.abspath(__file__)) + "/application_data.json", "w+")
