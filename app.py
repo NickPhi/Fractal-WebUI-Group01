@@ -102,8 +102,6 @@ def update_check():
             print("Updating version: group")
             # write all required information to the file
             write_update(GIT_GROUP, GROUP_VERSION)
-            # update version number
-            updateJsonFile("GROUP_UPDATE_VERSION", GROUP_VERSION)
             # restart_15()
             return render_template('system_reboot.html', response='Updated group version to ' + GROUP_VERSION)
     else:  # User Update
@@ -112,8 +110,6 @@ def update_check():
             print("Updating version: user")
             # write all required information to the file
             write_update(GIT_USER, USER_VERSION)
-            # lastly update version number
-            updateJsonFile("USER_UPDATE_VERSION", USER_VERSION)  # Also thinking this is updating in current not new dir
             # restart_15()
             return render_template('system_reboot.html', response='Updated user version to ' + USER_VERSION)
 
@@ -145,6 +141,7 @@ def write_update(git, version_num):
             WantedBy=multi-user.target    
             '''
         file.write(content)
+    updateJsonFile("USER_UPDATE_VERSION", NEW_PRJ_PATH + "/application_data.json")
 
 
 def email_send(text):
@@ -234,7 +231,8 @@ def timer_settings():
         return render_template('timer_settings.html')
     if request.method == 'POST':
         data = request.form
-        updateJsonFile('USER_TIMER', data['set-time'])
+        filePath = os.path.dirname(os.path.abspath(__file__)) + "/application_data.json"
+        updateJsonFile('USER_TIMER', data['set-time'], filePath)
         return render_template('index.html', response="timer settings set")
 
 
@@ -244,7 +242,8 @@ def alarm_settings():
         return render_template('alarm_settings.html')
     if request.method == 'POST':
         data = request.form
-        updateJsonFile('USER_ALARM', data['set-time'])
+        filePath = os.path.dirname(os.path.abspath(__file__)) + "/application_data.json"
+        updateJsonFile('USER_ALARM', data['set-time'], filePath)
         return render_template('index.html', response="alarm settings set")
 
 
@@ -282,14 +281,14 @@ def run_this_command():  # works
         os.system(COMMAND)
 
 
-def updateJsonFile(Key, Value):
-    jsonFile = open(os.path.dirname(os.path.abspath(__file__)) + "/application_data.json", "r")
+def updateJsonFile(Key, Value, filePath):
+    jsonFile = open(filePath, "r")
     data = json.load(jsonFile)  # Read the JSON into the buffer
     jsonFile.close()
     # Update Key & Value
     data[Key] = Value
     # Save changes to JSON file
-    jsonFile = open(os.path.dirname(os.path.abspath(__file__)) + "/application_data.json", "w+")
+    jsonFile = open(filePath, "w+")
     jsonFile.write(json.dumps(data))
     jsonFile.close()
 
