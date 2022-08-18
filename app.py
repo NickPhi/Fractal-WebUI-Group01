@@ -52,7 +52,7 @@ def index():
                           "Group or user=" + UPDATE_GROUP_OR_USER + " | " + "Group version=" + GROUP_VERSION + " | " + \
                           "User version=" + USER_VERSION + " | " + "Git Group=" + GIT_GROUP + " | " + "Git user=" + \
                           GIT_USER + " | " + "Command=" + COMMAND + " | " + "EM=" + EM_DATA + " | " + "PS=" + PS_DATA
-            #update_check()
+            # update_check()
             return render_template('index.html', response=test_string)
         else:
             print("authentication failed")  # Start new thread
