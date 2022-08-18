@@ -113,7 +113,7 @@ def update_check():
             # write all required information to the file
             write_update(GIT_USER, USER_VERSION)
             # lastly update version number
-            updateJsonFile("GROUP_UPDATE_VERSION", USER_VERSION)
+            updateJsonFile("USER_UPDATE_VERSION", USER_VERSION)  # Also thinking this is updating in current not new dir
             # restart_15()
             return render_template('system_reboot.html', response='Updated user version to ' + USER_VERSION)
 
@@ -123,7 +123,8 @@ def write_update(git, version_num):
     os.system('cd')
     s_list = git.split("/")
     prj_name = s_list[4]  # Assuming git URL separated 5 times by "/"
-    os.system('git clone ' + git + ' ' + XPATH + prj_name)
+    NEW_PRJ_PATH = XPATH + prj_name + version_num
+    os.system('git clone ' + git + ' ' + NEW_PRJ_PATH)
     with open('/lib/systemd/system/webserver.service', 'w') as file:
         content = \
             '''
@@ -135,7 +136,7 @@ def write_update(git, version_num):
             Environment=DISPLAY=:0.0
             Environment=XAUTHORITY=/home/pi/.Xauthority
             Type=simple
-            ExecStart=/usr/bin/python3''' + ' ' + XPATH + prj_name + version_num + '''/app.py
+            ExecStart=/usr/bin/python3''' + ' ' + NEW_PRJ_PATH + '''/app.py
             Restart=on-abort
             User=pi
             Group=pi
