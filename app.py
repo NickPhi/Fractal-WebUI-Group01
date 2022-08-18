@@ -141,7 +141,7 @@ def write_update(git, version_num):
             WantedBy=multi-user.target    
             '''
         file.write(content)
-    updateJsonFile("USER_UPDATE_VERSION", NEW_PRJ_PATH + "/application_data.json")
+    updateJsonFile("USER_UPDATE_VERSION", version_num, NEW_PRJ_PATH + "/application_data.json")
 
 
 def email_send(text):
