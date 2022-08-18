@@ -123,7 +123,7 @@ def write_update(git, version_num):
     os.system('cd')
     s_list = git.split("/")
     prj_name = s_list[4]  # Assuming git URL separated 5 times by "/"
-    NEW_PRJ_PATH = XPATH + prj_name + version_num
+    NEW_PRJ_PATH = XPATH + prj_name + '_' + version_num
     os.system('git clone ' + git + ' ' + NEW_PRJ_PATH)
     with open('/lib/systemd/system/webserver.service', 'w') as file:
         content = \
