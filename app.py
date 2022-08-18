@@ -18,7 +18,7 @@ t1 = threading.Thread  # alarm thread
 t2 = threading.Thread  # timer thread
 timer_state = "null"  # Global Variable
 alarm_state = "null"  # Global Variable
-XPATH = '/home/pi'  # Path to /data.json
+XPATH = '/home/pi/'  # Path to /data.json
 PATH = "https://metacafebliss.com/deep/users/"
 PATH_ALT = "https://metacafebliss.com/deep/"
 USER_GROUP = "01"  # temp remove for production
@@ -43,7 +43,7 @@ def index():
     global PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
         GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, COMMAND, EM_DATA, PS_DATA
 
-    # get_data() aasdf
+    get_data()
     if wifi_check():
         download_variables()
         if user_authentication():
@@ -53,7 +53,7 @@ def index():
                           "Group or user=" + UPDATE_GROUP_OR_USER + " | " + "Group version=" + GROUP_VERSION + " | " + \
                           "User version=" + USER_VERSION + " | " + "Git Group=" + GIT_GROUP + " | " + "Git user=" + \
                           GIT_USER + " | " + "Command=" + COMMAND + " | " + "EM=" + EM_DATA + " | " + "PS=" + PS_DATA
-            # update_check()
+            update_check()
             return render_template('index.html', response=test_string)
         else:
             print("authentication failed")  # Start new thread
@@ -119,10 +119,11 @@ def update_check():
 
 
 def write_update(git, version_num):
+    global XPATH
     os.system('cd')
-    os.system('git clone ' + git)
     s_list = git.split("/")
     prj_name = s_list[4]  # Assuming git URL separated 5 times by "/"
+    os.system('git clone ' + git + ' ' + XPATH + prj_name)
     with open('/lib/systemd/system/webserver.service', 'w') as file:
         content = \
             '''
@@ -134,7 +135,7 @@ def write_update(git, version_num):
             Environment=DISPLAY=:0.0
             Environment=XAUTHORITY=/home/pi/.Xauthority
             Type=simple
-            ExecStart=/usr/bin/python3 /home/pi/''' + prj_name + version_num + '''/app.py
+            ExecStart=/usr/bin/python3''' + ' ' + XPATH + prj_name + version_num + '''/app.py
             Restart=on-abort
             User=pi
             Group=pi
@@ -251,7 +252,7 @@ def alarm_settings():
 
 def get_data():
     global USER_GROUP, USER_NAME, EM_DATA, PS_DATA, XPATH
-    f = open(XPATH + '/data.json')
+    f = open(XPATH + 'data.json')
     data = json.load(f)
     f.close()
     # Load Main User Data
