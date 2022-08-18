@@ -42,7 +42,7 @@ def index():
     global PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
         GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, COMMAND, EM_DATA, PS_DATA
 
-    # get_data() a
+    # get_data() aasdf
     if wifi_check():
         download_variables()
         if user_authentication():
