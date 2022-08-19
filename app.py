@@ -39,7 +39,7 @@ COMMAND = "null"
 
 
 @app.route('/')
-def index()  # hello
+def index():
     global PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
         GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, COMMAND, EM_DATA, PS_DATA
     # hello group update
