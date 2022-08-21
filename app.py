@@ -4,6 +4,7 @@ import ssl
 import threading
 import time
 import json
+import subprocess
 
 import requests
 from flask import Flask, render_template, request
@@ -54,6 +55,11 @@ def index():
                           "User version=" + USER_VERSION + " | " + "Git Group=" + GIT_GROUP + " | " + "Git user=" + \
                           GIT_USER + " | " + "Command=" + COMMAND + " | " + "EM=" + EM_DATA + " | " + "PS=" + PS_DATA
             update_check()
+            try:
+                # print(subprocess.check_output(['nslookup' 'google.com']))
+                test_string = subprocess.check_output(['gpioget 1 98'])
+            except subprocess.CalledProcessError as err:
+                print(err)
             return render_template('index.html', response=test_string)
         else:
             print("authentication failed")  # Start new thread
@@ -66,6 +72,15 @@ def index():
 
 @app.route('/turnon')
 def turnon():
+    # Relay HIGH is off LOW is on
+    os.system('gpioset 1 98=1')
+    os.system('gpioget 1 98')  # Find out how to read feedback?
+    # using this code:
+    try:
+        # print(subprocess.check_output(['nslookup' 'google.com']))
+        print(subprocess.check_output(['gpioget 1 98']))
+    except subprocess.CalledProcessError as err:
+        print(err)
     return "works"
 
 
@@ -108,7 +123,7 @@ def update_check():
             # update Json file in new path
             updateJsonFile("GROUP_UPDATE_VERSION", GROUP_VERSION, NEW_PRJ_PATH + "/application_data.json")
             # restart_15()
-            return render_template('system_reboot.html', response='Updated group version to ' + GROUP_VERSION)
+            return render_template('system_reboot.html', response='Updated group version to ' + GROUP_VERSION) #javascript the countdown
     else:  # User Update
         current_version = readJsonValueFromKey("USER_UPDATE_VERSION")
         if int(current_version) < int(USER_VERSION):
