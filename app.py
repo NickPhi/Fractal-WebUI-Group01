@@ -37,13 +37,13 @@ COMMAND = "null"
 
 # GLOBALS
 
-
+# if index is refreshed it may keep threads running may want to kill them unless index will never refresh
 @app.route('/')
 def index():
     global PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
         GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, COMMAND, EM_DATA, PS_DATA
     # hello group update
-    get_data()
+    # get_data()
     if wifi_check():
         download_variables()
         if user_authentication():
@@ -53,7 +53,7 @@ def index():
                           "Group or user=" + UPDATE_GROUP_OR_USER + " | " + "Group version=" + GROUP_VERSION + " | " + \
                           "User version=" + USER_VERSION + " | " + "Git Group=" + GIT_GROUP + " | " + "Git user=" + \
                           GIT_USER + " | " + "Command=" + COMMAND + " | " + "EM=" + EM_DATA + " | " + "PS=" + PS_DATA
-            update_check()
+            # update_check()
             return render_template('index.html', response=test_string)
         else:
             print("authentication failed")  # Start new thread
@@ -136,7 +136,7 @@ def write_update(git, NEW_PRJ_PATH):
 
             [Service]
             Environment=DISPLAY=:0.0
-            Environment=XAUTHORITY=/home/pi/.Xauthority
+            Environment=XAUTHORITY='''+ XPATH +'''.Xauthority
             Type=simple
             ExecStart=/usr/bin/python3''' + ' ' + NEW_PRJ_PATH + '''/app.py
             Restart=on-abort

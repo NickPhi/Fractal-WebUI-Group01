@@ -3,29 +3,51 @@
 {% block title %}Home Page{% endblock %}
 
 {% block head %}
-<script type="text/javascript" src="{{ url_for('static', filename='js/2.1.3_jquery.min.js') }}"></script>
+
+<script type="text/javascript" src="{{ url_for('static', filename='js/popup_js.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/popup.css') }}">
 {% endblock %}
 
 {% block content %}
+
+
+
 <div class="container">
     <script type="text/javascript">$(function() { $("#onbutton").click(function (event) { $.getJSON('/turnon', { },
         function(data) { }); return false; }); });
     </script>
-    <button class="button button1" id="onbutton">Turn on</button>
+
+	<button class="button button1" id="onbutton" onclick="timeFunction1()"><div class="popup1">
+    <span class="popuptext1" id="myPopup1">Turned ON</span>
+    </div><div style="font-size: 40px;">Turn on</div></button>
+
     <iframe class="home-message" src="https://www.metacafebliss.com" title="Iframe Example"></iframe>
     <script type="text/javascript"> $(function() { $("#offbutton").click(function (event) { $.getJSON('/turnoff', { },
         function(data) { }); return false; }); });
     </script>
-    <button class="button button2" id="offbutton">Turn off</button>
+
+    <button class="button button2" id="offbutton" onclick="timeFunction2()"><div class="popup2">
+    <span class="popuptext2" id="myPopup2">Turned OFF</span>
+    </div><div style="font-size: 40px;">Turn off</div></button>
+
     <script type=text/javascript> $(function() { $("#timerButton").click(function (event) { $.getJSON('/timer', { },
         function(data) { }); return false; }); });
     </script>
-    <button class="button button4" id="timerButton">Timer ON/OFF</button>
+
+    <button class="button button4" id="timerButton" onclick="timeFunction4()"><div class="popup4">
+    <span class="popuptext4" id="myPopup4">Timer Disabled</span>
+    </div><div style="font-size: 40px;">Timer ON/OFF</div></button>
+
     <script type=text/javascript> $(function() { $("#alarmButton").click(function (event) { $.getJSON('/alarm', { },
         function(data) { }); return false; }); });
     </script>
-    <button class="button button5" id="alarmButton">Alarm <br>ON/OFF</button>
-    <button class="button button6" onclick="location.href='{{ url_for('wifi') }}';">WiFi</button>
+
+    <button class="button button5" id="alarmButton" onclick="timeFunction5()"><div class="popup5">
+    <span class="popuptext5" id="myPopup5">Alarm Disabled</span>
+    </div><div style="font-size: 40px;">Alarm <br>ON/OFF</div></button>
+
+
+    <button class="button button6" onclick="location.href='{{ url_for('wifi') }}';"><div style="font-size: 40px;">WiFi</div></button>
     <button class="button button7" onclick="location.href='{{ url_for('timer_settings') }}';">Timer Settings</button>
     <button class="button button8" onclick="location.href='{{ url_for('alarm_settings') }}';">Alarm Settings</button>
     <button class="button button9" onclick="location.href='{{ url_for('alarm_settings') }}';">Advanced Settings</button>
