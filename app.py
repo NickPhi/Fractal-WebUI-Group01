@@ -54,11 +54,6 @@ def index():
                           "User version=" + USER_VERSION + " | " + "Git Group=" + GIT_GROUP + " | " + "Git user=" + \
                           GIT_USER + " | " + "Command=" + COMMAND + " | " + "EM=" + EM_DATA + " | " + "PS=" + PS_DATA
             update_check()
-            try:
-                # print(subprocess.check_output(['nslookup' 'google.com']))
-                test_string = subprocess.check_output('gpioget 1 98', shell=True)
-            except subprocess.CalledProcessError as err:
-                print(err)
             return render_template('index.html', response=test_string)
         else:
             print("authentication failed")  # Start new thread
@@ -77,7 +72,7 @@ def turnon():
     # using this code:
     try:
         # print(subprocess.check_output(['nslookup' 'google.com'])) b'0/n'
-        print(subprocess.check_output('gpioget 1 98', shell=True)) # b'0/n' is its actual ouptut
+        print(subprocess.check_output('gpioget 1 98', shell=True))  # b'0/n' is its actual output
     except subprocess.CalledProcessError as err:
         print(err)
     return "works"
