@@ -56,7 +56,7 @@ def index():
             update_check()
             try:
                 # print(subprocess.check_output(['nslookup' 'google.com']))
-                test_string = subprocess.check_output('gpioget 1 98', shell=True)
+                test_string = subprocess.check_output('gpioget 1 98')
             except subprocess.CalledProcessError as err:
                 print(err)
             return render_template('index.html', response=test_string)
@@ -77,7 +77,7 @@ def turnon():
     # using this code:
     try:
         # print(subprocess.check_output(['nslookup' 'google.com']))
-        print(subprocess.check_output(['gpioget 1 98']))
+        print(subprocess.check_output('gpioget 1 98', shell=True))
     except subprocess.CalledProcessError as err:
         print(err)
     return "works"
@@ -121,7 +121,7 @@ def update_check():
             write_update(GIT_GROUP, NEW_PRJ_PATH)
             # update Json file in new path
             updateJsonFile("GROUP_UPDATE_VERSION", GROUP_VERSION, NEW_PRJ_PATH + "/application_data.json")
-            restart_15()
+            # restart_15()
             # return render_template('system_reboot.html', response='Updated group version to ' + GROUP_VERSION) #javascript the countdown
     else:  # User Update
         current_version = readJsonValueFromKey("USER_UPDATE_VERSION")
