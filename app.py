@@ -122,7 +122,7 @@ def update_check():
             write_update(GIT_GROUP, NEW_PRJ_PATH)
             # update Json file in new path
             updateJsonFile("GROUP_UPDATE_VERSION", GROUP_VERSION, NEW_PRJ_PATH + "/application_data.json")
-            # restart_15()
+            restart_15()
             return render_template('system_reboot.html', response='Updated group version to ' + GROUP_VERSION) #javascript the countdown
     else:  # User Update
         current_version = readJsonValueFromKey("USER_UPDATE_VERSION")
@@ -162,7 +162,6 @@ def write_update(git, NEW_PRJ_PATH):
             WantedBy=multi-user.target    
             '''
         file.write(content)
-    return NEW_PRJ_PATH
 
 
 def email_send(text):
