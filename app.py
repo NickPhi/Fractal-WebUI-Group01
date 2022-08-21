@@ -56,7 +56,7 @@ def index():
             update_check()
             try:
                 # print(subprocess.check_output(['nslookup' 'google.com']))
-                test_string = subprocess.check_output('gpioget 1 98')
+                test_string = subprocess.check_output('gpioget 1 98', shell=True)
             except subprocess.CalledProcessError as err:
                 print(err)
             return render_template('index.html', response=test_string)
@@ -76,8 +76,8 @@ def turnon():
     os.system('gpioget 1 98')  # Find out how to read feedback?
     # using this code:
     try:
-        # print(subprocess.check_output(['nslookup' 'google.com']))
-        print(subprocess.check_output('gpioget 1 98', shell=True))
+        # print(subprocess.check_output(['nslookup' 'google.com'])) b'0/n'
+        print(subprocess.check_output('gpioget 1 98', shell=True)) # b'0/n' is its actual ouptut
     except subprocess.CalledProcessError as err:
         print(err)
     return "works"
