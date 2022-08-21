@@ -44,7 +44,6 @@ def index():
     global PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
         GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, COMMAND, EM_DATA, PS_DATA
     # hxx
-    get_data()
     if wifi_check():
         download_variables()
         if user_authentication():
@@ -57,7 +56,7 @@ def index():
             update_check()
             try:
                 # print(subprocess.check_output(['nslookup' 'google.com']))
-                test_string = subprocess.check_output(['gpioget 1 98'])
+                test_string = subprocess.check_output('gpioget 1 98', shell=True)
             except subprocess.CalledProcessError as err:
                 print(err)
             return render_template('index.html', response=test_string)
@@ -123,7 +122,7 @@ def update_check():
             # update Json file in new path
             updateJsonFile("GROUP_UPDATE_VERSION", GROUP_VERSION, NEW_PRJ_PATH + "/application_data.json")
             restart_15()
-            return render_template('system_reboot.html', response='Updated group version to ' + GROUP_VERSION) #javascript the countdown
+            # return render_template('system_reboot.html', response='Updated group version to ' + GROUP_VERSION) #javascript the countdown
     else:  # User Update
         current_version = readJsonValueFromKey("USER_UPDATE_VERSION")
         if int(current_version) < int(USER_VERSION):
@@ -375,6 +374,7 @@ def alarm_thread(mode):
 
 
 if __name__ == "__main__":
+    get_data()
     app.run(debug=True)
 
 # Notes to self:
