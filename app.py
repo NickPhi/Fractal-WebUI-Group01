@@ -42,7 +42,7 @@ USER_VERSION = "null"
 GIT_GROUP = "null"
 GIT_USER = "null"
 COMMAND = "null"
-SEND_ACTIVE_UPDATES = "null"
+SEND_ACTIVE_UPDATES = "null" # 1 ON 0 OFF
 
 
 # GLOBALS
@@ -50,27 +50,20 @@ SEND_ACTIVE_UPDATES = "null"
 # if index is refreshed it may keep threads running may want to kill them unless index will never refresh
 @app.route('/')
 def index():
-    global PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
-        GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, COMMAND, EM_DATA, PS_DATA, SEND_ACTIVE_UPDATES, ADMIN_PHONE
-
     if wifi_check():
         download_variables()
         updateDayAnalytics("IP", str(getPublicIP()))
         if user_authentication():
-            # for testing purposes get string variables
-            test_string = "Path=" + PATH + " | " + "User Group=" + USER_GROUP + " | " + "Username=" + USER_NAME + " | " \
-                          + "Admin email=" + ADMIN_EMAIL + " | " + "Authentication=" + AUTHENTICATION + " | " + \
-                          "Group or user=" + UPDATE_GROUP_OR_USER + " | " + "Group version=" + GROUP_VERSION + " | " + \
-                          "User version=" + USER_VERSION + " | " + "Git Group=" + GIT_GROUP + " | " + "Git user=" + \
-                          GIT_USER + " | " + "Command=" + COMMAND + " | " + "EM=" + EM_DATA + " | " + "PS=" + PS_DATA \
-                          + " | " + "active updates=" + SEND_ACTIVE_UPDATES
-
+            if SEND_ACTIVE_UPDATES == "1":
+                email_send("user authenticated", "User authenticated")
             if update_check():
                 return render_template('system_reboot.html', response='Updated your version')
-
-            return render_template('index.html', response=test_string)
+            else:
+                return render_template('index.html')
+            return render_template('index.html')
         else:
-            print("authentication failed")  # Start new thread
+            print("authentication failed")
+            email_weekly_analytics("auth failed")
             restart_15()
             return render_template('payment.html', response=ADMIN_EMAIL)
         # It will cycle so best to turn itself off than restart
@@ -131,30 +124,50 @@ def speaker_protection_(mode):
 
 @app.route('/turnon')
 def turnon():
-    global ON_start, ON_end
+    global ON_start, ON_end, SEND_ACTIVE_UPDATES
     ON_start = time.time()
     system("ON")
+    if SEND_ACTIVE_UPDATES == "1":
+        email_send("ON", "User clicked turn on")
     return "ON"
 
 
 @app.route('/turnoff')
 def turnoff():
-    global ON_start, ON_end
+    global ON_start, ON_end, SEND_ACTIVE_UPDATES
     ON_end = time.time()
     print(ON_end - ON_start)
     system("OFF")
+    if SEND_ACTIVE_UPDATES == "1":
+        email_send("OFF", "User clicked turn off")
     return "OFF"
 
 
 @app.route('/settings.html', methods=['GET', 'POST'])
 def settings():
-    global ADMIN_EMAIL, ADMIN_PHONE
+    global PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
+        GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, COMMAND, EM_DATA, PS_DATA, SEND_ACTIVE_UPDATES, \
+        ADMIN_PHONE
     if request.method == 'GET':
+        if SEND_ACTIVE_UPDATES == "1":
+            email_send("html settings", "User clicked settings")
         return render_template("settings.html", response=ADMIN_EMAIL + " " + ADMIN_PHONE)
     if request.method == 'POST':
         data = request.form
-        if data["email"] != "":
-            email_send(data["email"])
+        for dta in data:
+            if dta == 'troubleshoot':
+                test_string = "Path=" + PATH + " | " + "User Group=" + USER_GROUP + " | " + "Username=" + USER_NAME + " | " \
+                              + "Admin email=" + ADMIN_EMAIL + " | " + "Authentication=" + AUTHENTICATION + " | " + \
+                              "Group or user=" + UPDATE_GROUP_OR_USER + " | " + "Group version=" + GROUP_VERSION + " | " + \
+                              "User version=" + USER_VERSION + " | " + "Git Group=" + GIT_GROUP + " | " + "Git user=" + \
+                              GIT_USER + " | " + "Command=" + COMMAND + " | " + "EM=" + EM_DATA + " | " + "PS=" + PS_DATA \
+                              + " | " + "active updates=" + SEND_ACTIVE_UPDATES
+                # file size # sub process lsblk
+                print(subprocess.check_output('lsblk', shell=True))
+                # IP address
+                email_send("troubleshoot", test_string)
+            if dta == 'email':
+                email_send("personal_email", data["email"])
         return data
 
 
@@ -186,6 +199,8 @@ def update_check():
             write_update(GIT_GROUP, NEW_PRJ_PATH)
             # update Json file in new path
             updateJsonFile("GROUP_UPDATE_VERSION", GROUP_VERSION, NEW_PRJ_PATH + "/application_data.json")
+            if SEND_ACTIVE_UPDATES == "1":
+                email_send("Update", "User updated Group")
             restart_15()
             return True
     else:  # User Update
@@ -199,6 +214,8 @@ def update_check():
             write_update(GIT_USER, NEW_PRJ_PATH)
             # update Json file in new path
             updateJsonFile("USER_UPDATE_VERSION", USER_VERSION, NEW_PRJ_PATH + "/application_data.json")
+            if SEND_ACTIVE_UPDATES == "1":
+                email_send("Update", "User updated user version")
             restart_15()
             return True
     return False
@@ -229,26 +246,20 @@ def write_update(git, NEW_PRJ_PATH):
         file.write(content)
 
 
-def email_send(text):
-    global EM_DATA, PS_DATA
-    port = 26
-    smtp_server = "mail.metacafebliss.com"
-    sender_email = EM_DATA
-    receiver_email = EM_DATA
-    password = PS_DATA
-    message = text
+def email_send(subject, text):
+    global USER_NAME
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = subject + " " + USER_NAME
+    msg['From'] = EM_DATA
+    msg['To'] = EM_DATA
 
-    with smtplib.SMTP(smtp_server, port) as server:
-        server.login(sender_email, password)
-        server.sendmail(sender_email, receiver_email, \
-                        '''
-                        <html>
-                        <head></head>
-                        <body><h1>test</h1></body>
-                        </html>
-                        ''' + message)
+    part1 = MIMEText(text, 'plain')
+    msg.attach(part1)
+
+    s = smtplib.SMTP("mail.metacafebliss.com", 26)
+    s.sendmail(EM_DATA, EM_DATA, msg.as_string())
+    s.quit()
     print("email sent")
-    # generate error id
 
 
 def download_variables():
@@ -405,7 +416,7 @@ def updateDayAnalytics(KEY, Value):  # updates current day and handles resets
         updateAnalyticsByDay("DAY" + day_num, KEY, Value)
     else:
         if int(day_num) + 1 == 8:
-            email_weekly_analytics(file_data)
+            email_weekly_analytics("Weekly analytics")
             resetAnalytics()
             updateDayAnalytics(KEY, Value)
         else:
@@ -555,10 +566,13 @@ def timer():
     return "works"
 
 
-def email_weekly_analytics(data):
+def email_weekly_analytics(subject):
+    filePath = os.path.dirname(os.path.abspath(__file__)) + "/analytics.json"
+    with open(filePath, 'r+') as file:
+        data = json.load(file)
     global USER_NAME
     msg = MIMEMultipart('alternative')
-    msg['Subject'] = "weekly_analytics " + USER_NAME
+    msg['Subject'] = subject + " " + USER_NAME
     msg['From'] = EM_DATA
     msg['To'] = EM_DATA
 
