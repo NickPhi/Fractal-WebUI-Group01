@@ -65,7 +65,9 @@ def index():
                           GIT_USER + " | " + "Command=" + COMMAND + " | " + "EM=" + EM_DATA + " | " + "PS=" + PS_DATA \
                           + " | " + "active updates=" + SEND_ACTIVE_UPDATES
 
-            update_check()
+            if update_check():
+                return render_template('system_reboot.html', response='Updated your version')
+
             return render_template('index.html', response=test_string)
         else:
             print("authentication failed")  # Start new thread
@@ -185,7 +187,7 @@ def update_check():
             # update Json file in new path
             updateJsonFile("GROUP_UPDATE_VERSION", GROUP_VERSION, NEW_PRJ_PATH + "/application_data.json")
             restart_15()
-            return render_template('system_reboot.html', response='Updated group version to ' + GROUP_VERSION)
+            return True
     else:  # User Update
         current_version = readJsonValueFromKey("USER_UPDATE_VERSION")
         if int(current_version) < int(USER_VERSION):
@@ -198,7 +200,8 @@ def update_check():
             # update Json file in new path
             updateJsonFile("USER_UPDATE_VERSION", USER_VERSION, NEW_PRJ_PATH + "/application_data.json")
             restart_15()
-            return render_template('system_reboot.html', response='Updated user version to ' + USER_VERSION)
+            return True
+    return False
 
 
 def write_update(git, NEW_PRJ_PATH):

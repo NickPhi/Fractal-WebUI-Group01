@@ -42,6 +42,16 @@
       width: 33%;
       height:50px
 }
+.buttonbk {
+      background-color: #4286f4;
+      color: white;
+      text-align: center;
+      display: inline-block;
+      border: none;
+      cursor: grab;
+      width: 33%;
+      height:50px
+}
 input[type=text], input[type=password] {
       width: 33%;
       padding: 16px 8px;
@@ -55,6 +65,7 @@ input[type=text], input[type=password] {
 <body>
 My phone number and email is {{ response }}
 <br><br>
+<button class="buttonbk" onclick="location.href='{{ url_for('index') }}';"><strong>Go back</strong></button><br><br>
 <form action="{{ url_for('settings') }}" method="post">
     <div class="container">
         <button class="button" type="submit" name="troubleshoot"><strong>Send Troubleshoot Information</strong></button>
