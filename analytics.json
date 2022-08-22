@@ -1,60 +1,60 @@
 {
     "DATES": {
-        "DAY1": {
-            "total_times_used": "0",
-            "alarms_used": "0",
-            "timers_used": "0",
-            "minutes": "0",
-            "IP": "67.172.179.126",
-            "date": "2022-08-21"
-        },
         "DAY7": {
-            "total_times_used": "0",
-            "alarms_used": "0",
-            "timers_used": "0",
+            "date": "null",
             "minutes": "0",
             "IP": "null",
-            "date": "null"
+            "timers_used": "0",
+            "alarms_used": "0",
+            "total_times_used": "0"
         },
         "DAY2": {
-            "total_times_used": "0",
-            "alarms_used": "0",
-            "timers_used": "0",
+            "date": "2022-08-22",
             "minutes": "0",
-            "IP": "null",
-            "date": "null"
-        },
-        "DAY6": {
-            "total_times_used": "0",
-            "alarms_used": "0",
+            "IP": "67.172.179.126",
             "timers_used": "0",
-            "minutes": "0",
-            "IP": "null",
-            "date": "null"
-        },
-        "DAY4": {
-            "total_times_used": "0",
             "alarms_used": "0",
-            "timers_used": "0",
-            "minutes": "0",
-            "IP": "null",
-            "date": "null"
+            "total_times_used": "0"
         },
         "DAY5": {
-            "total_times_used": "0",
-            "alarms_used": "0",
-            "timers_used": "0",
+            "date": "null",
             "minutes": "0",
             "IP": "null",
-            "date": "null"
+            "timers_used": "0",
+            "alarms_used": "0",
+            "total_times_used": "0"
+        },
+        "DAY4": {
+            "date": "null",
+            "minutes": "0",
+            "IP": "null",
+            "timers_used": "0",
+            "alarms_used": "0",
+            "total_times_used": "0"
+        },
+        "DAY1": {
+            "date": "2022-08-21",
+            "minutes": "0",
+            "IP": "67.172.179.126",
+            "timers_used": "0",
+            "alarms_used": "0",
+            "total_times_used": "0"
+        },
+        "DAY6": {
+            "date": "null",
+            "minutes": "0",
+            "IP": "null",
+            "timers_used": "0",
+            "alarms_used": "0",
+            "total_times_used": "0"
         },
         "DAY3": {
-            "total_times_used": "0",
-            "alarms_used": "0",
-            "timers_used": "0",
+            "date": "null",
             "minutes": "0",
             "IP": "null",
-            "date": "null"
+            "timers_used": "0",
+            "alarms_used": "0",
+            "total_times_used": "0"
         }
     }
 }

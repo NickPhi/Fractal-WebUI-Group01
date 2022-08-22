@@ -8,7 +8,7 @@
     <script src="{{ url_for('static', filename='js/jquery.keyboard.js') }}"></script>
 
     <style>
-      html, body {
+      .containerbg {
       display: flex;
       justify-content: center;
       font-family: Roboto, Arial, sans-serif;
@@ -89,10 +89,8 @@
     </script>
 </head>
 <body>
-<form action="{{ url_for('wifi') }}" method="post">
-    <button class="buttong" onclick="location.href='{{ url_for('index') }}';">back</button>
-</form><br>
-<div>
+<button class="buttong" onclick="location.href='{{ url_for('index') }}';">Go back</button>
+<div class="containerbg">
     <form action="{{ url_for('wifi') }}" method="post">
         <h1>WiFi Connection</h1>
         <div class="icon">

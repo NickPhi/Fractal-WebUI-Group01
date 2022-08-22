@@ -65,7 +65,7 @@ def index():
                           GIT_USER + " | " + "Command=" + COMMAND + " | " + "EM=" + EM_DATA + " | " + "PS=" + PS_DATA \
                           + " | " + "active updates=" + SEND_ACTIVE_UPDATES
 
-            # update_check()
+            update_check()
             return render_template('index.html', response=test_string)
         else:
             print("authentication failed")  # Start new thread
@@ -314,7 +314,7 @@ def wifi():
 @app.route('/wifi_back.html', methods=['GET', 'POST'])
 def wifi_back():
     if request.method == 'GET':
-        return render_template('wifi.html')
+        return render_template('wifi_back.html')
     if request.method == 'POST':
         data = request.form
         ssid = data['wifi_ssid']
