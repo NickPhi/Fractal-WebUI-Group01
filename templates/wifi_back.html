@@ -89,6 +89,9 @@
     </script>
 </head>
 <body>
+<form action="{{ url_for('wifi') }}" method="post">
+    <button class="buttong" onclick="location.href='{{ url_for('index') }}';">back</button>
+</form><br>
 <div>
     <form action="{{ url_for('wifi') }}" method="post">
         <h1>WiFi Connection</h1>

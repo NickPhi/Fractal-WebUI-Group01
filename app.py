@@ -34,7 +34,7 @@ USER_NAME = "01_001"  # temp remove for production
 ADMIN_EMAIL = "null"
 ADMIN_PHONE = "null"
 EM_DATA = "analytics@metacafebliss.com"  # temp remove for production
-PS_DATA = ""  # temp remove for production
+PS_DATA = "tiger55@tiger"  # temp remove for production
 AUTHENTICATION = "null"
 UPDATE_GROUP_OR_USER = "null"
 GROUP_VERSION = "null"
@@ -288,7 +288,33 @@ def wifi_check():
 @app.route('/wifi.html', methods=['GET', 'POST'])
 def wifi():
     if request.method == 'GET':
-        return render_template('wifi.html', response="simple GET command")
+        return render_template('wifi.html')
+    if request.method == 'POST':
+        data = request.form
+        ssid = data['wifi_ssid']
+        password = data['wifi_pass']
+        with open('/etc/network/interfaces', 'w') as file:
+            content = \
+                'source-directory /etc/network/interfaces.d\n\n' + \
+                'auto lo\n' + \
+                'iface lo inet loopback\n' + \
+                "iface eth0 inet dhcp\n" + \
+                'allow-hotplug wlan0\n' + \
+                'auto wlan0\n' + \
+                'auto wlan0\n' + \
+                'iface wlan0 inet dhcp\n' + \
+                'wpa-ssid "' + ssid + '"\n' + \
+                'wpa-psk "' + password + '"\n'
+            file.write(content)
+    print("Write successful. Rebooting now.")
+    restart_15()
+    return render_template('system_reboot.html')
+
+
+@app.route('/wifi_back.html', methods=['GET', 'POST'])
+def wifi_back():
+    if request.method == 'GET':
+        return render_template('wifi.html')
     if request.method == 'POST':
         data = request.form
         ssid = data['wifi_ssid']
