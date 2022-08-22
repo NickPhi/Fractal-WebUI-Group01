@@ -3,11 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <title>troubleshooting page</title>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/2.1.3_jquery.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-ui.min.css') }}">
+    <link rel="stylesheet" href="/static/css/keyboard.css">
+    <script src="{{ url_for('static', filename='js/jquery.keyboard.js') }}"></script>
+    <script>
+		$(function(){
+			$('#text').keyboard();
+		});
+    </script>
+    <style>
+.container {
+    display: grid;
+    grid-template-columns: 33% 33% 33%;
+    row-gap: 4px;
+    column-gap: 4px;
+}
+.button {
+      background-color: #4286f4;
+      color: white;
+      padding: 14px 0;
+      text-align: center;
+      display: inline-block;
+      border: none;
+      cursor: grab;
+      width: 100%;
+      height:100px
+}
+.buttonsum {
+      background-color: #4286f4;
+      color: white;
+      padding: 14px 0;
+      text-align: center;
+      display: inline-block;
+      margin: 10px;
+      border: none;
+      cursor: grab;
+      width: 33%;
+      height:50px
+}
+input[type=text], input[type=password] {
+      width: 33%;
+      padding: 16px 8px;
+      margin: 8px 0;
+      display: inline-block;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      }
+</style>
 </head>
 <body>
+My phone number and email is {{ response }}
+<br><br>
+<form action="{{ url_for('settings') }}" method="post">
+    <div class="container">
+        <button class="button" type="submit" name="troubleshoot"><strong>Send Troubleshoot Information</strong></button>
+        <button class="button" type="submit" name="rollback"><strong>Roll Back to Previous Update</strong></button>
+        <button class="button" type="submit" name="unfinished"><strong>Unfinished</strong></button>
+    </div><br>
+</form>
+<form action="{{ url_for('settings') }}" method="post" style="border: 4px solid #ccc;">
+     <h3>Send an email to me: </h3><input type="text" id="text" placeholder="Enter text" name="email">
+     <button class="buttonsum" style="width: 33%%;" type="submit"><strong>Send</strong></button>
+</form>
 buttons to send emails
 
  Send an email
+ROLLBACK
 
 >> send version_group.txt
 >> send version_user.txt

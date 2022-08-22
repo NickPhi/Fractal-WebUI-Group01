@@ -1,0 +1,60 @@
+{
+    "DATES": {
+        "DAY1": {
+            "total_times_used": "0",
+            "alarms_used": "0",
+            "timers_used": "0",
+            "minutes": "0",
+            "IP": "67.172.179.126",
+            "date": "2022-08-21"
+        },
+        "DAY7": {
+            "total_times_used": "0",
+            "alarms_used": "0",
+            "timers_used": "0",
+            "minutes": "0",
+            "IP": "null",
+            "date": "null"
+        },
+        "DAY2": {
+            "total_times_used": "0",
+            "alarms_used": "0",
+            "timers_used": "0",
+            "minutes": "0",
+            "IP": "null",
+            "date": "null"
+        },
+        "DAY6": {
+            "total_times_used": "0",
+            "alarms_used": "0",
+            "timers_used": "0",
+            "minutes": "0",
+            "IP": "null",
+            "date": "null"
+        },
+        "DAY4": {
+            "total_times_used": "0",
+            "alarms_used": "0",
+            "timers_used": "0",
+            "minutes": "0",
+            "IP": "null",
+            "date": "null"
+        },
+        "DAY5": {
+            "total_times_used": "0",
+            "alarms_used": "0",
+            "timers_used": "0",
+            "minutes": "0",
+            "IP": "null",
+            "date": "null"
+        },
+        "DAY3": {
+            "total_times_used": "0",
+            "alarms_used": "0",
+            "timers_used": "0",
+            "minutes": "0",
+            "IP": "null",
+            "date": "null"
+        }
+    }
+}

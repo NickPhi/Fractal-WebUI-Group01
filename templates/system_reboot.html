@@ -5,7 +5,19 @@
     <title>system reboot</title>
 </head>
 <body>
-<div>{{ response }}</div>
-<h1 style="color: red;">The system will reboot in 15 seconds</h1>
+<script>
+  var timeleft = 14;
+  var downloadTimer = setInterval(function(){
+    if(timeleft <= 0){
+      clearInterval(downloadTimer);
+      document.getElementById("countdown").innerHTML = "NOW";
+    } else {
+      document.getElementById("countdown").innerHTML = "The system will reboot in " + timeleft + " seconds";
+    }
+    timeleft -= 1;
+  }, 1000);
+</script>
+<h1 style="color: red;"><div id="countdown"></div></h1>
+<h1>{{ response }}</h1>
 </body>
 </html>
