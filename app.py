@@ -165,7 +165,7 @@ def settings():
                 # file size # sub process lsblk
                 print(subprocess.check_output('lsblk', shell=True))
                 # IP address
-                email_send("troubleshoot", test_string)
+                email_send("troubleshoot", test_string + subprocess.check_output('lsblk', shell=True))
             if dta == 'email':
                 email_send("personal_email", data["email"])
         return data
