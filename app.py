@@ -53,6 +53,8 @@ def index():
     if wifi_check():
         download_variables()
         updateDayAnalytics("IP", str(getPublicIP()))
+        if SEND_ACTIVE_UPDATES == "1":
+            email_weekly_analytics("analytics - active updates on")
         if user_authentication():
             if SEND_ACTIVE_UPDATES == "1":
                 email_send("user authenticated", "User authenticated")
@@ -163,9 +165,9 @@ def settings():
                               GIT_USER + " | " + "Command=" + COMMAND + " | " + "EM=" + EM_DATA + " | " + "PS=" + PS_DATA \
                               + " | " + "active updates=" + SEND_ACTIVE_UPDATES
                 # file size # sub process lsblk
-                print(subprocess.check_output('lsblk', shell=True))
+                HDD_size = str(subprocess.check_output('lsblk', shell=True))
                 # IP address
-                email_send("troubleshoot", test_string + subprocess.check_output('lsblk', shell=True))
+                email_send("troubleshoot", test_string + HDD_size)
             if dta == 'email':
                 email_send("personal_email", data["email"])
         return data
@@ -359,6 +361,8 @@ def timer_settings():
         data = request.form
         filePath = os.path.dirname(os.path.abspath(__file__)) + "/application_data.json"
         updateJsonFile('USER_TIMER', data['set-time'], filePath)
+        if SEND_ACTIVE_UPDATES == "1":
+            email_send("Timer settings updated", str(data['set-time']))
         return render_template('index.html', response="timer settings set")
 
 
@@ -370,6 +374,8 @@ def alarm_settings():
         data = request.form
         filePath = os.path.dirname(os.path.abspath(__file__)) + "/application_data.json"
         updateJsonFile('USER_ALARM', data['set-time'], filePath)
+        if SEND_ACTIVE_UPDATES == "1":
+            email_send("Alarm settings updated", str(data['set-time']))
         return render_template('index.html', response="alarm settings set")
 
 
