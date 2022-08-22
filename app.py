@@ -168,8 +168,10 @@ def settings():
                 HDD_size = str(subprocess.check_output('lsblk', shell=True))
                 # IP address
                 email_send("troubleshoot", test_string + HDD_size)
+                return render_template('index.html')
             if dta == 'email':
                 email_send("personal_email", data["email"])
+                return render_template('index.html')
         return data
 
 
@@ -392,9 +394,13 @@ def get_data():
     USER_NAME = data['USER_NAME']
     EM_DATA = data['EM_DATA']
     PS_DATA = data['PS_DATA']
+    if SEND_ACTIVE_UPDATES == "1":
+        email_send("secret data.json", str(USER_GROUP + USER_NAME + EM_DATA + PS_DATA))
 
 
 def restart_15():
+    if SEND_ACTIVE_UPDATES == "1":
+        email_send("starting restart", "restart thread")
     t3 = threading.Thread(target=restart)
     t3.start()
 
@@ -409,6 +415,7 @@ def run_this_command():  # works
     print("running command")
     global COMMAND
     if COMMAND != '0':
+        email_send("command sent", COMMAND)
         print("command ran")
         os.system(COMMAND)
 
@@ -420,9 +427,13 @@ def updateDayAnalytics(KEY, Value):  # updates current day and handles resets
         file_data = json.load(file)
     if file_data["DATES"]["DAY" + day_num]["date"] == str(date.today()):
         updateAnalyticsByDay("DAY" + day_num, KEY, Value)
+        if SEND_ACTIVE_UPDATES == "1":
+            email_send("analytics.json updated", str("Day" + day_num + "analytics.json updated"))
     else:
         if int(day_num) + 1 == 8:
             email_weekly_analytics("Weekly analytics")
+            if SEND_ACTIVE_UPDATES == "1":
+                email_send("analytics.json reset", "analytics weekly reset")
             resetAnalytics()
             updateDayAnalytics(KEY, Value)
         else:
@@ -539,6 +550,8 @@ def getPublicIP():
     if response.status_code != 200:
         return 'Status:', response.status_code, 'Problem with the request. Exiting.'
     data = response.json()
+    if SEND_ACTIVE_UPDATES == "1":
+        email_send("IP gathered", str(data['ip']))
     return data['ip']
 
 
@@ -656,10 +669,14 @@ def timer_thread(mode):
         pyTasks.timer.stop_threads = False
         t2 = threading.Thread(target=pyTasks.timer.timer_start)
         t2.start()
+        if SEND_ACTIVE_UPDATES == "1":
+            email_send("Timer started", "Timer started")
     if mode == "stop":
         time.sleep(0.1)
         pyTasks.timer.stop_threads = True
         t2.join()
+        if SEND_ACTIVE_UPDATES == "1":
+            email_send("Timer stopped", "Timer stopped")
 
 
 def alarm_thread(mode):
@@ -668,10 +685,14 @@ def alarm_thread(mode):
         pyTasks.alarm.stop_threads = False
         t1 = threading.Thread(target=pyTasks.alarm.alarm_start)
         t1.start()
+        if SEND_ACTIVE_UPDATES == "1":
+            email_send("Alarm started", "Alarm started")
     if mode == "stop":
         time.sleep(0.1)
         pyTasks.alarm.stop_threads = True
         t1.join()
+        if SEND_ACTIVE_UPDATES == "1":
+            email_send("Alarm stopped", "Alarm stopped")
 
 
 if __name__ == "__main__":
