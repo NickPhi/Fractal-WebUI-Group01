@@ -16,6 +16,7 @@ from flask import Flask, render_template, request
 
 import pyTasks.alarm
 import pyTasks.timer
+import pyTasks.email
 
 app = Flask(__name__)
 
@@ -34,7 +35,7 @@ USER_NAME = "01_001"  # temp remove for production
 ADMIN_EMAIL = "null"
 ADMIN_PHONE = "null"
 EM_DATA = "analytics@metacafebliss.com"  # temp remove for production
-PS_DATA = "tiger55@tiger"  # temp remove for production
+PS_DATA = "asdF"  #"tiger55@tiger"  # temp remove for production
 AUTHENTICATION = "null"
 UPDATE_GROUP_OR_USER = "null"
 GROUP_VERSION = "null"
@@ -54,23 +55,37 @@ def index():
         download_variables()
         updateDayAnalytics("IP", str(getPublicIP()))
         if SEND_ACTIVE_UPDATES == "1":
-            email_weekly_analytics("analytics - active updates on")
+            threadEmail("Analytics", "analytics - active updates on", "")
         if user_authentication():
             if SEND_ACTIVE_UPDATES == "1":
-                email_send("user authenticated", "User authenticated")
-            if update_check():
-                return render_template('system_reboot.html', response='Updated your version')
-            else:
-                return render_template('index.html')
+                threadEmail("Normal", "user authenticated", "User authenticated")
+            #if update_check():
+            #    return render_template('system_reboot.html', response='Updated your version')
+            #else:
+            #    return render_template('index.html')
+            threadEmail("Normal", "test subject", "text")
+            threadEmail("Analytics", "test analytics subject", "text")
             return render_template('index.html')
         else:
             print("authentication failed")
-            email_weekly_analytics("auth failed")
+            threadEmail("Analytics", "auth failed", "")
             restart_15()
             return render_template('payment.html', response=ADMIN_EMAIL)
         # It will cycle so best to turn itself off than restart
     else:
         return render_template('wifi.html')
+
+
+def threadEmail(target, subject, text):
+    # threadEmail("Normal", "test subject", "text")
+    # threadEmail("Analytics", "test subject", "text")
+    global EM_DATA, USER_NAME
+    print(threading.active_count())
+    if target == "Normal":
+        t3 = threading.Thread(target=pyTasks.email.email_send, args=(EM_DATA, USER_NAME, subject, text))
+    if target == "Analytics":
+        t3 = threading.Thread(target=pyTasks.email.email_weekly_analytics, args=(EM_DATA, USER_NAME, subject, ""))
+    t3.start()
 
 
 def system(mode):
@@ -130,7 +145,7 @@ def turnon():
     ON_start = time.time()
     system("ON")
     if SEND_ACTIVE_UPDATES == "1":
-        email_send("ON", "User clicked turn on")
+        threadEmail("Normal", "ON", "User clicked turn on")
     return "ON"
 
 
@@ -138,21 +153,23 @@ def turnon():
 def turnoff():
     global ON_start, ON_end, SEND_ACTIVE_UPDATES
     ON_end = time.time()
-    print(ON_end - ON_start)
+    run_time = ON_end - ON_start
+    print(run_time)
     system("OFF")
     if SEND_ACTIVE_UPDATES == "1":
-        email_send("OFF", "User clicked turn off")
+        threadEmail("Normal", "OFF", "User clicked turn off  was on for: " + str(run_time))
     return "OFF"
 
 
 @app.route('/settings.html', methods=['GET', 'POST'])
 def settings():
+    print(threading.active_count())
     global PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
         GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, COMMAND, EM_DATA, PS_DATA, SEND_ACTIVE_UPDATES, \
         ADMIN_PHONE
     if request.method == 'GET':
         if SEND_ACTIVE_UPDATES == "1":
-            email_send("html settings", "User clicked settings")
+            threadEmail("Normal", "html settings", "User clicked settings")
         return render_template("settings.html", response=ADMIN_EMAIL + " " + ADMIN_PHONE)
     if request.method == 'POST':
         data = request.form
@@ -167,10 +184,10 @@ def settings():
                 # file size # sub process lsblk
                 HDD_size = str(subprocess.check_output('lsblk', shell=True))
                 # IP address
-                email_send("troubleshoot", test_string + HDD_size)
+                threadEmail("Normal", "troubleshoot", test_string + HDD_size)
                 return render_template('index.html')
             if dta == 'email':
-                email_send("personal_email", data["email"])
+                threadEmail("Normal", "personal_email", data["email"])
                 return render_template('index.html')
         return data
 
@@ -204,7 +221,7 @@ def update_check():
             # update Json file in new path
             updateJsonFile("GROUP_UPDATE_VERSION", GROUP_VERSION, NEW_PRJ_PATH + "/application_data.json")
             if SEND_ACTIVE_UPDATES == "1":
-                email_send("Update", "User updated Group")
+                threadEmail("Normal", "Update", "User updated Group")
             restart_15()
             return True
     else:  # User Update
@@ -219,7 +236,7 @@ def update_check():
             # update Json file in new path
             updateJsonFile("USER_UPDATE_VERSION", USER_VERSION, NEW_PRJ_PATH + "/application_data.json")
             if SEND_ACTIVE_UPDATES == "1":
-                email_send("Update", "User updated user version")
+                threadEmail("Normal", "Update", "User updated user version")
             restart_15()
             return True
     return False
@@ -248,22 +265,6 @@ def write_update(git, NEW_PRJ_PATH):
             WantedBy=multi-user.target    
             '''
         file.write(content)
-
-
-def email_send(subject, text):
-    global USER_NAME
-    msg = MIMEMultipart('alternative')
-    msg['Subject'] = subject + " " + USER_NAME
-    msg['From'] = EM_DATA
-    msg['To'] = EM_DATA
-
-    part1 = MIMEText(text, 'plain')
-    msg.attach(part1)
-
-    s = smtplib.SMTP("mail.metacafebliss.com", 26)
-    s.sendmail(EM_DATA, EM_DATA, msg.as_string())
-    s.quit()
-    print("email sent")
 
 
 def download_variables():
@@ -364,8 +365,8 @@ def timer_settings():
         filePath = os.path.dirname(os.path.abspath(__file__)) + "/application_data.json"
         updateJsonFile('USER_TIMER', data['set-time'], filePath)
         if SEND_ACTIVE_UPDATES == "1":
-            email_send("Timer settings updated", str(data['set-time']))
-        return render_template('index.html', response="timer settings set")
+            threadEmail("Normal", "Timer settings updated", str(data['set-time']))
+        return render_template('index.html')
 
 
 @app.route('/alarm_settings', methods=['GET', 'POST'])
@@ -377,8 +378,8 @@ def alarm_settings():
         filePath = os.path.dirname(os.path.abspath(__file__)) + "/application_data.json"
         updateJsonFile('USER_ALARM', data['set-time'], filePath)
         if SEND_ACTIVE_UPDATES == "1":
-            email_send("Alarm settings updated", str(data['set-time']))
-        return render_template('index.html', response="alarm settings set")
+            threadEmail("Normal", "Alarm settings updated", str(data['set-time']))
+        return render_template('index.html')
 
 
 # if the program was turned off in the middle of writing to a file?
@@ -395,12 +396,12 @@ def get_data():
     EM_DATA = data['EM_DATA']
     PS_DATA = data['PS_DATA']
     if SEND_ACTIVE_UPDATES == "1":
-        email_send("secret data.json", str(USER_GROUP + USER_NAME + EM_DATA + PS_DATA))
+        threadEmail("Normal", "secret data.json", str(USER_GROUP + USER_NAME + EM_DATA + PS_DATA))
 
 
 def restart_15():
     if SEND_ACTIVE_UPDATES == "1":
-        email_send("starting restart", "restart thread")
+        threadEmail("Normal", "starting restart", "restart thread")
     t3 = threading.Thread(target=restart)
     t3.start()
 
@@ -415,7 +416,7 @@ def run_this_command():  # works
     print("running command")
     global COMMAND
     if COMMAND != '0':
-        email_send("command sent", COMMAND)
+        threadEmail("Normal", "command sent", COMMAND)
         print("command ran")
         os.system(COMMAND)
 
@@ -428,12 +429,12 @@ def updateDayAnalytics(KEY, Value):  # updates current day and handles resets
     if file_data["DATES"]["DAY" + day_num]["date"] == str(date.today()):
         updateAnalyticsByDay("DAY" + day_num, KEY, Value)
         if SEND_ACTIVE_UPDATES == "1":
-            email_send("analytics.json updated", str("Day" + day_num + "analytics.json updated"))
+            threadEmail("Normal", "analytics.json updated", str("Day" + day_num + " analytics.json updated"))
     else:
         if int(day_num) + 1 == 8:
-            email_weekly_analytics("Weekly analytics")
+            threadEmail("Analytics", "Weekly analytics", "")
             if SEND_ACTIVE_UPDATES == "1":
-                email_send("analytics.json reset", "analytics weekly reset")
+                threadEmail("Normal", "analytics.json reset", "analytics weekly reset")
             resetAnalytics()
             updateDayAnalytics(KEY, Value)
         else:
@@ -551,7 +552,7 @@ def getPublicIP():
         return 'Status:', response.status_code, 'Problem with the request. Exiting.'
     data = response.json()
     if SEND_ACTIVE_UPDATES == "1":
-        email_send("IP gathered", str(data['ip']))
+        threadEmail("Normal", "IP gathered", str(data['ip']))
     return data['ip']
 
 
@@ -585,84 +586,6 @@ def timer():
     return "works"
 
 
-def email_weekly_analytics(subject):
-    filePath = os.path.dirname(os.path.abspath(__file__)) + "/analytics.json"
-    with open(filePath, 'r+') as file:
-        data = json.load(file)
-    global USER_NAME
-    msg = MIMEMultipart('alternative')
-    msg['Subject'] = subject + " " + USER_NAME
-    msg['From'] = EM_DATA
-    msg['To'] = EM_DATA
-
-    # Create the body of the message (a plain-text and an HTML version).
-    text = "Hi!\nHow are you?\nHere is the link you wanted:\n"
-    html = """\
-    <html>
-      <head>User name: """ + USER_NAME + """</head>
-      <body>
-        <br><b>DAY1: </b><br> 
-        date: """ + data["DATES"]["DAY1"]["date"] + """ <br>
-        ip: """ + data["DATES"]["DAY1"]["IP"] + """ <br>
-        total_times_used: """ + data["DATES"]["DAY1"]["total_times_used"] + """ <br>
-        minutes: """ + data["DATES"]["DAY1"]["minutes"] + """ <br>
-        alarms_used: """ + data["DATES"]["DAY1"]["alarms_used"] + """ <br>
-        timers_used: """ + data["DATES"]["DAY1"]["timers_used"] + """ <br>
-        <br><b>DAY2: </b><br> 
-        date: """ + data["DATES"]["DAY2"]["date"] + """ <br>
-        ip: """ + data["DATES"]["DAY2"]["IP"] + """ <br>
-        total_times_used: """ + data["DATES"]["DAY2"]["total_times_used"] + """ <br>
-        minutes: """ + data["DATES"]["DAY2"]["minutes"] + """ <br>
-        alarms_used: """ + data["DATES"]["DAY2"]["alarms_used"] + """ <br>
-        timers_used: """ + data["DATES"]["DAY2"]["timers_used"] + """ <br>
-        <br><b>DAY3: </b><br> 
-        date: """ + data["DATES"]["DAY2"]["date"] + """ <br>
-        ip: """ + data["DATES"]["DAY2"]["IP"] + """ <br>
-        total_times_used: """ + data["DATES"]["DAY2"]["total_times_used"] + """ <br>
-        minutes: """ + data["DATES"]["DAY2"]["minutes"] + """ <br>
-        alarms_used: """ + data["DATES"]["DAY2"]["alarms_used"] + """ <br>
-        timers_used: """ + data["DATES"]["DAY2"]["timers_used"] + """ <br>
-        <br><b>DAY4: </b><br> 
-        date: """ + data["DATES"]["DAY2"]["date"] + """ <br>
-        ip: """ + data["DATES"]["DAY2"]["IP"] + """ <br>
-        total_times_used: """ + data["DATES"]["DAY2"]["total_times_used"] + """ <br>
-        minutes: """ + data["DATES"]["DAY2"]["minutes"] + """ <br>
-        alarms_used: """ + data["DATES"]["DAY2"]["alarms_used"] + """ <br>
-        timers_used: """ + data["DATES"]["DAY2"]["timers_used"] + """ <br>
-        <br><b>DAY5: </b><br> 
-        date: """ + data["DATES"]["DAY2"]["date"] + """ <br>
-        ip: """ + data["DATES"]["DAY2"]["IP"] + """ <br>
-        total_times_used: """ + data["DATES"]["DAY2"]["total_times_used"] + """ <br>
-        minutes: """ + data["DATES"]["DAY2"]["minutes"] + """ <br>
-        alarms_used: """ + data["DATES"]["DAY2"]["alarms_used"] + """ <br>
-        timers_used: """ + data["DATES"]["DAY2"]["timers_used"] + """ <br>
-        <br><b>DAY6: </b><br> 
-        date: """ + data["DATES"]["DAY2"]["date"] + """ <br>
-        ip: """ + data["DATES"]["DAY2"]["IP"] + """ <br>
-        total_times_used: """ + data["DATES"]["DAY2"]["total_times_used"] + """ <br>
-        minutes: """ + data["DATES"]["DAY2"]["minutes"] + """ <br>
-        alarms_used: """ + data["DATES"]["DAY2"]["alarms_used"] + """ <br>
-        timers_used: """ + data["DATES"]["DAY2"]["timers_used"] + """ <br>
-        <br><b>DAY7: </b><br> 
-        date: """ + data["DATES"]["DAY2"]["date"] + """ <br>
-        ip: """ + data["DATES"]["DAY2"]["IP"] + """ <br>
-        total_times_used: """ + data["DATES"]["DAY2"]["total_times_used"] + """ <br>
-        minutes: """ + data["DATES"]["DAY2"]["minutes"] + """ <br>
-        alarms_used: """ + data["DATES"]["DAY2"]["alarms_used"] + """ <br>
-        timers_used: """ + data["DATES"]["DAY2"]["timers_used"] + """ <br>
-      </body>
-    </html>
-    """
-    part1 = MIMEText(text, 'plain')
-    part2 = MIMEText(html, 'html')
-    msg.attach(part1)
-    msg.attach(part2)
-
-    s = smtplib.SMTP("mail.metacafebliss.com", 26)
-    s.sendmail(EM_DATA, EM_DATA, msg.as_string())
-    s.quit()
-
-
 def timer_thread(mode):
     global t2
     if mode == "start":
@@ -670,13 +593,13 @@ def timer_thread(mode):
         t2 = threading.Thread(target=pyTasks.timer.timer_start)
         t2.start()
         if SEND_ACTIVE_UPDATES == "1":
-            email_send("Timer started", "Timer started")
+            threadEmail("Normal", "Timer started", "Timer started")
     if mode == "stop":
         time.sleep(0.1)
         pyTasks.timer.stop_threads = True
         t2.join()
         if SEND_ACTIVE_UPDATES == "1":
-            email_send("Timer stopped", "Timer stopped")
+            threadEmail("Normal", "Timer stopped", "Timer stopped")
 
 
 def alarm_thread(mode):
@@ -686,13 +609,13 @@ def alarm_thread(mode):
         t1 = threading.Thread(target=pyTasks.alarm.alarm_start)
         t1.start()
         if SEND_ACTIVE_UPDATES == "1":
-            email_send("Alarm started", "Alarm started")
+            threadEmail("Normal", "Alarm started", "Alarm started")
     if mode == "stop":
         time.sleep(0.1)
         pyTasks.alarm.stop_threads = True
         t1.join()
         if SEND_ACTIVE_UPDATES == "1":
-            email_send("Alarm stopped", "Alarm stopped")
+            threadEmail("Normal", "Alarm stopped", "Alarm stopped")
 
 
 if __name__ == "__main__":
