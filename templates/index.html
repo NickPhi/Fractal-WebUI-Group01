@@ -6,6 +6,14 @@
 <script type="text/javascript" src="{{ url_for('static', filename='js/2.1.3_jquery.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/popup_js.js') }}"></script>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/popup.css') }}">
+<script>
+    var r = document.querySelector(':root');
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    var he = (h-63)/2;
+    console.log(he + 'px');
+    r.style.setProperty('--base', he + 'px');
+</script>
 {% endblock %}
 
 {% block content %}

@@ -1,3 +1,8 @@
+:root {
+  --base: 268px;
+  --white: #ffffff;
+}
+
 .button {
     border: none;
     color: white;
@@ -6,7 +11,7 @@
     display: inline-block;
     cursor: pointer;
     width:100%;  /* Screen resolution: 1024px */
-    height:268px; /* Screen resolution: 600px */
+    height:var(--base) /* Screen resolution: 600px */
     }
 
     .button1 {background-color: #4CAF50;} /* Green */
