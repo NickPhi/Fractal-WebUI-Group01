@@ -51,6 +51,7 @@ SEND_ACTIVE_UPDATES = "null" # 1 ON 0 OFF
 # if index is refreshed it may keep threads running may want to kill them unless index will never refresh
 @app.route('/')
 def index():
+    os.system("export DISPLAY=:0")
     os.system("xscreensaver -nosplash")
     if wifi_check():
         download_variables()
