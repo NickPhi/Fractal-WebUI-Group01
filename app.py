@@ -51,6 +51,7 @@ SEND_ACTIVE_UPDATES = "null" # 1 ON 0 OFF
 # if index is refreshed it may keep threads running may want to kill them unless index will never refresh
 @app.route('/')
 def index():
+    os.system("xscreensaver -nosplash")
     if wifi_check():
         download_variables()
         updateDayAnalytics("IP", str(getPublicIP()))
@@ -59,10 +60,10 @@ def index():
         if user_authentication():
             if SEND_ACTIVE_UPDATES == "1":
                 threadEmail("Normal", "user authenticated", "User authenticated")
-            #if update_check():
-            #    return render_template('system_reboot.html', response='Updated your version')
-            #else:
-            #    return render_template('index.html')
+            if update_check():
+                return render_template('system_reboot.html', response='Updated your version')
+            else:
+                return render_template('index.html')
             threadEmail("Normal", "test subject", "text")
             threadEmail("Analytics", "test analytics subject", "text")
             return render_template('index.html')
