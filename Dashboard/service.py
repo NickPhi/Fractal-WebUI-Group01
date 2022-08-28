@@ -55,7 +55,7 @@ def start_index():
                 # else:
                 #    return render_template('index.html')
                 ONCE_INDEX = "1"
-                t4 = threading.Thread(target=authentication_)
+                t4 = threading.Thread(target=authentication_thread)
                 t4.start()
                 return "Authenticated"
             else:
@@ -212,15 +212,6 @@ def run_alarm():
     else:  # Initialization
         alarm_thread("start")
         alarm_state = "ON"
-
-
-def authentication_():
-    total_minutes = 15
-    while total_minutes > 0:
-        time.sleep(60)
-        total_minutes -= 1
-    authentication()
-    authentication_()
 
 
 def authentication():
@@ -540,6 +531,15 @@ def threadEmail(target, subject, text):
     if target == "Analytics":
         t3 = threading.Thread(target=pyTasks.email.email_weekly_analytics, args=(EM_DATA, USER_NAME, subject, ""))
     t3.start()
+
+
+def authentication_thread():
+    total_minutes = 15
+    while total_minutes > 0:
+        time.sleep(60)
+        total_minutes -= 1
+    authentication()
+    authentication_thread()
 
 
 def timer_thread(mode):
