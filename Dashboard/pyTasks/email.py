@@ -1,9 +1,4 @@
-import os
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-import json
-import smtplib
-import threading
+from Dashboard import os, json, threading, MIMEMultipart, MIMEText, smtplib
 
 
 def email_send(EM_DATA, USER_NAME, subject, text):

@@ -1,8 +1,5 @@
-import json
-from datetime import datetime  # To set date and time
-import time
-import re
-
+from Dashboard import datetime, time, re
+from Dashboard.service import readJsonValueFromKey
 stop_threads = False
 
 
@@ -53,10 +50,3 @@ def alarm_start():
                         print("Wake Up!")
                         break
     print("Alarm stop")
-
-
-def readJsonValueFromKey(Key):
-    f = open('application_data.json')
-    data = json.load(f)
-    f.close()
-    return data[Key]

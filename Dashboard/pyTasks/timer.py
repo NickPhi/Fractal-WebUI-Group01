@@ -1,7 +1,6 @@
-import json
-import time
+from Dashboard import time
+from Dashboard.service import readJsonValueFromKey
 import datetime
-
 stop_threads = False
 
 
@@ -19,10 +18,3 @@ def timer_start():
         total_seconds -= 1
 
     print("Timer Stop")
-
-
-def readJsonValueFromKey(Key):
-    f = open('application_data.json')
-    data = json.load(f)
-    f.close()
-    return data[Key]
