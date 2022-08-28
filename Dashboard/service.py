@@ -215,12 +215,12 @@ def run_alarm():
 
 
 def authentication_():
-    total_minutes = 30
+    total_minutes = 15
     while total_minutes > 0:
-        authentication()
         time.sleep(60)
         total_minutes -= 1
-    return
+    authentication()
+    authentication_()
 
 
 def authentication():
