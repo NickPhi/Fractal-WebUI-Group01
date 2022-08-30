@@ -1,4 +1,4 @@
-from Dashboard import time
+from Dashboard import time, os
 from Dashboard.service import readJsonValueFromKey
 import datetime
 stop_threads = False
@@ -6,7 +6,8 @@ stop_threads = False
 
 def timer_start():
     global stop_threads
-    user_time = readJsonValueFromKey("USER_TIMER")
+    filePath = os.path.abspath(os.curdir) + "/Dashboard/_settings/application_data.json"
+    user_time = readJsonValueFromKey("USER_TIMER", filePath)
     total_seconds = float(user_time) * 60
 
     while total_seconds > 0:

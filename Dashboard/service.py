@@ -7,12 +7,12 @@ timer_state = "null"  # Global Variable
 alarm_state = "null"  # Global Variable
 ON_start = 0
 ON_end = 0
-XPATH = '/home/kiosk/'  # Path to /data.json
-PATH = "https://metacafebliss.com/deep/users/"
-PATH_ALT = "https://metacafebliss.com/deep/"
-USER_GROUP = "01"  # temp remove for production
-USER_NAME = "01_001"  # temp remove for production
-WIFI_DRIVER_NAME = "wlxe84e0698d8d4"
+HOME_PATH = "null"  # Path to /data.json
+PATH = "null"
+PATH_ALT = "null"
+USER_GROUP = "null"  # temp remove for production
+USER_NAME = "null"  # temp remove for production
+WIFI_DRIVER_NAME = "null"
 ADMIN_EMAIL = "null"
 ADMIN_PHONE = "null"
 EM_DATA = "analytics@metacafebliss.com"  # temp remove for production
@@ -42,7 +42,7 @@ def start_index():
     if ONCE_INDEX == "0":
         if wifi_check():
             print("wifi pass")
-            download_variables()
+            load_variables_from_settings()
             print("variables downloaded")
             updateDayAnalytics("IP", str(getPublicIP()))
             print("IP obtained")
@@ -51,8 +51,8 @@ def start_index():
             if user_authentication():
                 if SEND_ACTIVE_UPDATES == "1":
                     threadEmail("Normal", "user authenticated", "User authenticated")
-                if update_check():
-                    return "Update"
+                #if update_check():
+                    #return "Update"
                 ONCE_INDEX = "1"
                 t4 = threading.Thread(target=authentication_thread)
                 t4.start()
@@ -61,6 +61,7 @@ def start_index():
                 threadEmail("Analytics", "auth failed", "")
                 restart_15()
                 print("authentication failed")
+                print(ADMIN_EMAIL)
                 return "Not-Authenticated"
         else:
             return "no-Wifi"
@@ -74,8 +75,6 @@ def start_index():
 
 
 def MODE(mode):
-    # h = lgpio.gpiochip_open(0)
-    # lgpio.gpio_write(h, 10, 1)
     global ON_start, ON_end
     if mode == "ON":
         ON_start = time.time()
@@ -102,37 +101,33 @@ def MODE(mode):
 def power_supply_amp_(mode):
     # Relay HIGH is off LOW is on
     if mode == "ON":
-        os.system('gpioset 1 98=0')
+        os.system('gpioset 1 91=0')
     elif mode == "OFF":
-        os.system('gpioset 1 98=1')
+        os.system('gpioset 1 91=1')
 
 
 def signal_generator_(mode):
     # Relay HIGH is off LOW is on
     if mode == "POWER_ON":
-        os.system('gpioset 1 98=0')
+        os.system('gpioset 1 92=0')
     elif mode == "POWER_OFF":
-        os.system('gpioset 1 98=1')
+        os.system('gpioset 1 92=1')
     elif mode == "SIGNAL_ON":
-        pass
-        # output
+        os.system(HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 off square inverse freq 12345678.12 on')
     elif mode == "SIGNAL_OFF":
-        pass
-        # output off
+        os.system(HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 off square inverse freq 12345678.12 off')
     elif mode == "LOAD":
-        pass
-        # load waveform
+        os.system(HOME_PATH + 'new-mhs5200a-12-bits/setwave5200 /dev/ttyUSB0 <file> <0-15>')
     elif mode == "UNLOAD":
-        pass
-        # unload waveform
+        os.system(HOME_PATH + 'new-mhs5200a-12-bits/setwave5200 /dev/ttyUSB0 <file> <0-15>')
 
 
 def speaker_protection_(mode):
     # Relay HIGH is off LOW is on
     if mode == "POWER_ON":
-        os.system('gpioset 1 98=0')
+        os.system('gpioset 1 93=0')
     elif mode == "POWER_OFF":
-        os.system('gpioset 1 98=1')
+        os.system('gpioset 1 93=1')
 
 
 ###########################################################################
@@ -217,7 +212,10 @@ def run_alarm():
 
 
 def authentication():
+    print(threading.active_count())
     if wifi_check():
+        download_variables()
+        save_downloaded_variables_to_profile()
         if user_authentication():
             if SEND_ACTIVE_UPDATES == "1":
                 threadEmail("Normal", "user authenticated", "User authenticated")
@@ -267,17 +265,17 @@ def wifi_check():
 def update_check():
     print("Update Start")
     global UPDATE_GROUP_OR_USER, GROUP_VERSION, USER_VERSION, \
-        GIT_GROUP, GIT_USER, XPATH
+        GIT_GROUP, GIT_USER, HOME_PATH
     if UPDATE_GROUP_OR_USER == "0":  # Group Update
         # Get current version
-        current_version = readJsonValueFromKey("GROUP_UPDATE_VERSION")
+        current_version = readJsonValueFromKey("GROUP_UPDATE_VERSION", os.path.dirname(os.path.abspath(__file__)) + "/_settings/application_data.json")
         if int(current_version) < int(GROUP_VERSION):
             # Compare current version and gathered version
             print("Updating version: group")
             # write all required information to the file
             s_list = GIT_GROUP.split("/")
             prj_name = s_list[4]  # Assuming git URL separated 5 times by "/"
-            NEW_PRJ_PATH = XPATH + prj_name + '_' + GROUP_VERSION  # USER_VERSION is a number
+            NEW_PRJ_PATH = HOME_PATH + prj_name + '_' + GROUP_VERSION  # USER_VERSION is a number
             write_update(GIT_GROUP, NEW_PRJ_PATH)
             # update Json file in new path
             updateJsonFile("GROUP_UPDATE_VERSION", GROUP_VERSION, NEW_PRJ_PATH + "/_settings/application_data.json")
@@ -288,13 +286,13 @@ def update_check():
             restart_15()
             return True
     else:  # User Update
-        current_version = readJsonValueFromKey("USER_UPDATE_VERSION")
+        current_version = readJsonValueFromKey("USER_UPDATE_VERSION", os.path.dirname(os.path.abspath(__file__)) + "/_settings/application_data.json")
         if int(current_version) < int(USER_VERSION):
             print("Updating version: user")
             # git
             s_list = GIT_USER.split("/")
             prj_name = s_list[4]  # Assuming git URL separated 5 times by "/"
-            NEW_PRJ_PATH = XPATH + prj_name + '_' + USER_VERSION  # USER_VERSION is a number
+            NEW_PRJ_PATH = HOME_PATH + prj_name + '_' + USER_VERSION  # USER_VERSION is a number
             write_update(GIT_USER, NEW_PRJ_PATH)
             # update Json file in new path
             updateJsonFile("USER_UPDATE_VERSION", USER_VERSION, NEW_PRJ_PATH + "/_settings/application_data.json")
@@ -308,8 +306,8 @@ def update_check():
 
 
 def get_data():
-    global USER_GROUP, USER_NAME, EM_DATA, PS_DATA, XPATH
-    f = open(XPATH + 'data.json')
+    global USER_GROUP, USER_NAME, EM_DATA, PS_DATA, HOME_PATH
+    f = open(HOME_PATH + 'data.json')
     data = json.load(f)
     f.close()
     # Load Main User Data
@@ -319,25 +317,6 @@ def get_data():
     PS_DATA = data['PS_DATA']
     if SEND_ACTIVE_UPDATES == "1":
         threadEmail("Normal", "secret data.json", str(USER_GROUP + USER_NAME + EM_DATA + PS_DATA))
-
-
-def download_variables():
-    global PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
-        GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, COMMAND, SEND_ACTIVE_UPDATES, ADMIN_PHONE
-    usr = requests.get(PATH + USER_NAME + '/user_settings.json')
-    j_ = usr.json()
-    ADMIN_EMAIL = j_['ADMIN_EMAIL']
-    ADMIN_PHONE = j_['ADMIN_PHONE']
-    AUTHENTICATION = j_['AUTHENTICATION']
-    UPDATE_GROUP_OR_USER = j_['UPDATE_GROUP_OR_USER']
-    SEND_ACTIVE_UPDATES = j_['SEND_ACTIVE_UPDATES']
-    USER_VERSION = j_['USER_VERSION']
-    GIT_USER = j_['GIT_USER']
-    COMMAND = j_['COMMAND']
-    gru = requests.get(PATH_ALT + USER_GROUP + '/group.json')
-    i_ = gru.json()
-    GIT_GROUP = i_['GIT_GROUP']
-    GROUP_VERSION = i_['GROUP_VERSION']
 
 
 def plug_Wifi(data):
@@ -389,7 +368,7 @@ def write_update(git, NEW_PRJ_PATH):
 
             [Service]
             Environment=DISPLAY=:0.0
-            Environment=XAUTHORITY=''' + XPATH + '''.Xauthority
+            Environment=XAUTHORITY=''' + HOME_PATH + '''.Xauthority
             Type=simple
             ExecStart=/usr/bin/python3''' + ' ' + NEW_PRJ_PATH + '''/run.py
             Restart=on-abort
@@ -402,7 +381,7 @@ def write_update(git, NEW_PRJ_PATH):
 
 
 def updateDayAnalytics(KEY, Value):  # updates current day and handles resets
-    day_num = readJsonValueFromKey("DAY")
+    day_num = readJsonValueFromKey("DAY", os.path.dirname(os.path.abspath(__file__)) + "/_settings/application_data.json")
     filePath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/analytics.json"
     with open(filePath, 'r+') as file:
         file_data = json.load(file)
@@ -506,11 +485,73 @@ def resetAnalytics():
     updateAnalyticsByDay("DAY1", "date", str(date.today()))
 
 
-def readJsonValueFromKey(Key):
-    f = open(os.path.dirname(os.path.abspath(__file__)) + "/_settings/application_data.json")
+def readJsonValueFromKey(Key, filePath):
+    f = open(filePath)
     data = json.load(f)
     f.close()
     return data[Key]
+
+
+def download_variables():
+    global PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
+        GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, COMMAND, SEND_ACTIVE_UPDATES, ADMIN_PHONE
+    usr = requests.get(PATH + USER_NAME + '/user_settings.json')
+    j_ = usr.json()
+    ADMIN_EMAIL = j_['ADMIN_EMAIL']
+    ADMIN_PHONE = j_['ADMIN_PHONE']
+    AUTHENTICATION = j_['AUTHENTICATION']
+    UPDATE_GROUP_OR_USER = j_['UPDATE_GROUP_OR_USER']
+    SEND_ACTIVE_UPDATES = j_['SEND_ACTIVE_UPDATES']
+    USER_VERSION = j_['USER_VERSION']
+    GIT_USER = j_['GIT_USER']
+    COMMAND = j_['COMMAND']
+    gru = requests.get(PATH_ALT + USER_GROUP + '/group.json')
+    i_ = gru.json()
+    GIT_GROUP = i_['GIT_GROUP']
+    GROUP_VERSION = i_['GROUP_VERSION']
+
+
+def load_variables_from_settings():
+    global HOME_PATH, PATH_ALT, PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
+        GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, COMMAND, SEND_ACTIVE_UPDATES, ADMIN_PHONE, WIFI_DRIVER_NAME
+    filePath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
+    HOME_PATH = readJsonValueFromKey("HOME_PATH", filePath)
+    PATH = readJsonValueFromKey("PATH", filePath)
+    PATH_ALT = readJsonValueFromKey("PATH_ALT", filePath)
+    USER_GROUP = readJsonValueFromKey("USER_GROUP", filePath)
+    USER_NAME = readJsonValueFromKey("USER_NAME", filePath)
+    WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", filePath)
+    ADMIN_EMAIL = readJsonValueFromKey("ADMIN_EMAIL", filePath)
+    ADMIN_PHONE = readJsonValueFromKey("ADMIN_PHONE", filePath)
+    AUTHENTICATION = readJsonValueFromKey("AUTHENTICATION", filePath)
+    UPDATE_GROUP_OR_USER = readJsonValueFromKey("UPDATE_GROUP_OR_USER", filePath)
+    SEND_ACTIVE_UPDATES = readJsonValueFromKey("SEND_ACTIVE_UPDATES", filePath)
+    USER_VERSION = readJsonValueFromKey("USER_VERSION", filePath)
+    GIT_USER = readJsonValueFromKey("GIT_USER", filePath)
+    COMMAND = readJsonValueFromKey("COMMAND", filePath)
+    GIT_GROUP = readJsonValueFromKey("GIT_GROUP", filePath)
+    GROUP_VERSION = readJsonValueFromKey("GROUP_VERSION", filePath)
+
+
+def save_downloaded_variables_to_profile():
+    global HOME_PATH, PATH_ALT, PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
+        GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, COMMAND, SEND_ACTIVE_UPDATES, ADMIN_PHONE, WIFI_DRIVER_NAME
+    filePath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
+    updateJsonFile("HOME_PATH", HOME_PATH, filePath)
+    updateJsonFile("PATH", PATH, filePath)
+    updateJsonFile("PATH_ALT", PATH_ALT, filePath)
+    updateJsonFile("USER_GROUP", USER_GROUP, filePath)
+    updateJsonFile("WIFI_DRIVER_NAME", WIFI_DRIVER_NAME, filePath)
+    updateJsonFile("ADMIN_EMAIL", ADMIN_EMAIL, filePath)
+    updateJsonFile("ADMIN_PHONE", ADMIN_PHONE, filePath)
+    updateJsonFile("AUTHENTICATION", AUTHENTICATION, filePath)
+    updateJsonFile("UPDATE_GROUP_OR_USER", UPDATE_GROUP_OR_USER, filePath)
+    updateJsonFile("SEND_ACTIVE_UPDATES", SEND_ACTIVE_UPDATES, filePath)
+    updateJsonFile("USER_VERSION", USER_VERSION, filePath)
+    updateJsonFile("GIT_USER", GIT_USER, filePath)
+    updateJsonFile("COMMAND", COMMAND, filePath)
+    updateJsonFile("GIT_GROUP", GIT_GROUP, filePath)
+    updateJsonFile("GROUP_VERSION", GROUP_VERSION, filePath)
 
 
 def updateJsonFile(Key, Value, filePath):
@@ -542,7 +583,7 @@ def threadEmail(target, subject, text):
 
 
 def authentication_thread():
-    total_minutes = 15
+    total_minutes = 1
     while total_minutes > 0:
         time.sleep(60)
         total_minutes -= 1

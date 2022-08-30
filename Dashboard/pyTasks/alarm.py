@@ -1,4 +1,4 @@
-from Dashboard import datetime, time, re
+from Dashboard import datetime, time, re, os
 from Dashboard.service import readJsonValueFromKey
 stop_threads = False
 
@@ -17,7 +17,8 @@ def isValidTime(time):
 
 
 def alarm_start():
-    user_time = readJsonValueFromKey("USER_ALARM")
+    filePath = os.path.abspath(os.curdir) + "/Dashboard/_settings/application_data.json"
+    user_time = readJsonValueFromKey("USER_ALARM", filePath)
 
     #  check for correct format
     if isValidTime(user_time):

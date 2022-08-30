@@ -1,6 +1,6 @@
+import Dashboard.service
 from Dashboard import app, threading
 from flask import render_template, request
-from Dashboard.service import ADMIN_PHONE, ADMIN_EMAIL
 from Dashboard.service import start_index, MODE, run_settings, plug_Wifi, plug_timer, plug_alarm, run_alarm, run_timer
 
 
@@ -12,7 +12,7 @@ def index():
     elif Status == "Authenticated":
         return render_template('index.html')
     elif Status == "Not-Authenticated":
-        return render_template('payment.html', response=ADMIN_EMAIL)
+        return render_template('payment.html', response=Dashboard.service.ADMIN_EMAIL)
     elif Status == "Update":
         return render_template('system_reboot.html', response='Updated your version')
     elif Status == "no-Wifi":
@@ -47,7 +47,7 @@ def timer():
 def settings():
     print(threading.active_count())
     if request.method == 'GET':
-        return render_template("settings.html", response=ADMIN_EMAIL + " " + ADMIN_PHONE)
+        return render_template("settings.html", response=Dashboard.service.ADMIN_EMAIL + " " + Dashboard.service.ADMIN_PHONE)
     if request.method == 'POST':
         run_settings(request.form)
         return render_template('index.html')

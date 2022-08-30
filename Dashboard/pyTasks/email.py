@@ -18,7 +18,7 @@ def email_send(EM_DATA, USER_NAME, subject, text):
 
 def email_weekly_analytics(EM_DATA, USER_NAME, subject, text):
     print(threading.active_count())
-    filePath = os.path.abspath(os.curdir) + "/analytics.json"
+    filePath = os.path.abspath(os.curdir) + "/Dashboard/_settings/analytics.json"
     with open(filePath, 'r+') as file:
         data = json.load(file)
     msg = MIMEMultipart('alternative')
