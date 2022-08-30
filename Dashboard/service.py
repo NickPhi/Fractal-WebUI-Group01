@@ -114,8 +114,10 @@ def signal_generator_(mode):
         os.system('sudo gpioset 1 92=1')
     elif mode == "SIGNAL_ON":
         os.system('sudo ' + HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 arb 0 freq 364 on')
+        time.sleep(.4)
     elif mode == "SIGNAL_OFF":
         os.system('sudo ' + HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 arb 0 freq 364 off')
+        time.sleep(.4)
     elif mode == "LOAD":
         os.system('sudo ' + HOME_PATH + 'new-mhs5200a-12-bits/setwave5200 /dev/ttyUSB0 ' + HOME_PATH + '/.local/phi.csv ' + '0')
         time.sleep(.8)
@@ -123,8 +125,6 @@ def signal_generator_(mode):
         os.system('sudo ' + HOME_PATH + 'new-mhs5200a-12-bits/setwave5200 /dev/ttyUSB0 ' + HOME_PATH + '/.local/zero.csv ' + '0')
         time.sleep(.4)
         os.system('sudo ' + HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 arb 1 freq 364 off')
-        time.sleep(.4)
-        os.system('sudo ' + HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 arb 0 freq 364 on')
 
 
 def speaker_protection_(mode):
