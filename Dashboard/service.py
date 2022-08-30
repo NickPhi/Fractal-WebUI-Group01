@@ -185,7 +185,7 @@ def restart_15():
 
 def restart():
     time.sleep(15)
-    os.system('sudo reboot now')
+    os.system('sudo reboot')
     # try, catch, kill thread, display error
 
 
@@ -351,8 +351,8 @@ def plug_Wifi(data):
                   wlxe84e0698d8d4:
                     optional: true
                     access-points:
-                      "Frigge2":
-                        password: "1111111111"
+                      "''' + ssid + '''":
+                        password: "''' + password + '''"
                     dhcp4: true
             '''
         file.write(content)
