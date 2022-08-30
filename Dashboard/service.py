@@ -113,13 +113,13 @@ def signal_generator_(mode):
     elif mode == "POWER_OFF":
         os.system('sudo gpioset 1 92=1')
     elif mode == "SIGNAL_ON":
-        os.system(HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 off square inverse freq 12345678.12 on')
+        os.system('sudo ' + HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 arb 0 freq 364 on')
     elif mode == "SIGNAL_OFF":
-        os.system(HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 off square inverse freq 12345678.12 off')
+        os.system('sudo ' + HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 arb 0 freq 364 off')
     elif mode == "LOAD":
-        os.system(HOME_PATH + 'new-mhs5200a-12-bits/setwave5200 /dev/ttyUSB0 <file> <0-15>')
+        os.system('sudo ' + HOME_PATH + 'new-mhs5200a-12-bits/setwave5200 /dev/ttyUSB0 ' + HOME_PATH + '/.local/phi.csv' + '0')
     elif mode == "UNLOAD":
-        os.system(HOME_PATH + 'new-mhs5200a-12-bits/setwave5200 /dev/ttyUSB0 <file> <0-15>')
+        os.system('sudo ' + HOME_PATH + 'new-mhs5200a-12-bits/setwave5200 /dev/ttyUSB0 ' + HOME_PATH + '/.local/zero.csv' + '0')
 
 
 def speaker_protection_(mode):
@@ -305,20 +305,6 @@ def update_check():
     return False
 
 
-def get_data():
-    global USER_GROUP, USER_NAME, EM_DATA, PS_DATA, HOME_PATH
-    f = open(HOME_PATH + 'data.json')
-    data = json.load(f)
-    f.close()
-    # Load Main User Data
-    USER_GROUP = data['USER_GROUP']
-    USER_NAME = data['USER_NAME']
-    EM_DATA = data['EM_DATA']
-    PS_DATA = data['PS_DATA']
-    if SEND_ACTIVE_UPDATES == "1":
-        threadEmail("Normal", "secret data.json", str(USER_GROUP + USER_NAME + EM_DATA + PS_DATA))
-
-
 def plug_Wifi(data):
     ssid = data['wifi_ssid']
     password = data['wifi_pass']
@@ -492,6 +478,17 @@ def readJsonValueFromKey(Key, filePath):
     return data[Key]
 
 
+def get_data():
+    global USER_GROUP, USER_NAME, EM_DATA, PS_DATA, HOME_PATH
+    f = open(HOME_PATH + '.local/data.json')
+    data = json.load(f)
+    f.close()
+    EM_DATA = data['EM_DATA']
+    PS_DATA = data['PS_DATA']
+    if SEND_ACTIVE_UPDATES == "1":
+        threadEmail("Normal", "secret data.json", str(EM_DATA + PS_DATA))
+
+
 def download_variables():
     global PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
         GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, COMMAND, SEND_ACTIVE_UPDATES, ADMIN_PHONE
@@ -521,6 +518,7 @@ def load_variables_from_settings():
     USER_GROUP = readJsonValueFromKey("USER_GROUP", filePath)
     USER_NAME = readJsonValueFromKey("USER_NAME", filePath)
     WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", filePath)
+    ###
     ADMIN_EMAIL = readJsonValueFromKey("ADMIN_EMAIL", filePath)
     ADMIN_PHONE = readJsonValueFromKey("ADMIN_PHONE", filePath)
     AUTHENTICATION = readJsonValueFromKey("AUTHENTICATION", filePath)
@@ -537,11 +535,6 @@ def save_downloaded_variables_to_profile():
     global HOME_PATH, PATH_ALT, PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
         GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, COMMAND, SEND_ACTIVE_UPDATES, ADMIN_PHONE, WIFI_DRIVER_NAME
     filePath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
-    updateJsonFile("HOME_PATH", HOME_PATH, filePath)
-    updateJsonFile("PATH", PATH, filePath)
-    updateJsonFile("PATH_ALT", PATH_ALT, filePath)
-    updateJsonFile("USER_GROUP", USER_GROUP, filePath)
-    updateJsonFile("WIFI_DRIVER_NAME", WIFI_DRIVER_NAME, filePath)
     updateJsonFile("ADMIN_EMAIL", ADMIN_EMAIL, filePath)
     updateJsonFile("ADMIN_PHONE", ADMIN_PHONE, filePath)
     updateJsonFile("AUTHENTICATION", AUTHENTICATION, filePath)

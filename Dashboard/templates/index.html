@@ -61,12 +61,11 @@
 <script>
         window.setInterval(function() {
             reloadIFrame()
-        }, 40000);
+        }, 120000);
 
         function reloadIFrame() {
             console.log('reloading..');
-            var iframe = document.getElementById('webframe');
-            iframe.src = iframe.src;
+            document.getElementById('webframe').src += '';
         }
 </script>
 
