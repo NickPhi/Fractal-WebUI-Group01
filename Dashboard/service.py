@@ -101,17 +101,17 @@ def MODE(mode):
 def power_supply_amp_(mode):
     # Relay HIGH is off LOW is on
     if mode == "ON":
-        os.system('gpioset 1 91=0')
+        os.system('sudo gpioset 1 91=0')
     elif mode == "OFF":
-        os.system('gpioset 1 91=1')
+        os.system('sudo gpioset 1 91=1')
 
 
 def signal_generator_(mode):
     # Relay HIGH is off LOW is on
     if mode == "POWER_ON":
-        os.system('gpioset 1 92=0')
+        os.system('sudo gpioset 1 92=0')
     elif mode == "POWER_OFF":
-        os.system('gpioset 1 92=1')
+        os.system('sudo gpioset 1 92=1')
     elif mode == "SIGNAL_ON":
         os.system(HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 off square inverse freq 12345678.12 on')
     elif mode == "SIGNAL_OFF":
@@ -125,9 +125,9 @@ def signal_generator_(mode):
 def speaker_protection_(mode):
     # Relay HIGH is off LOW is on
     if mode == "POWER_ON":
-        os.system('gpioset 1 93=0')
+        os.system('sudo gpioset 1 93=0')
     elif mode == "POWER_OFF":
-        os.system('gpioset 1 93=1')
+        os.system('sudo gpioset 1 93=1')
 
 
 ###########################################################################
