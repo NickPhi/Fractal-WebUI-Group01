@@ -1,5 +1,5 @@
 from Dashboard import datetime, time, re, os
-from Dashboard.service import readJsonValueFromKey
+from Dashboard.service import readJsonValueFromKey, MODE
 stop_threads = False
 
 
@@ -50,4 +50,6 @@ def alarm_start():
                     if alarm_sec == current_sec:
                         print("Wake Up!")
                         break
+    if not stop_threads:
+        MODE("ON")  # for how long
     print("Alarm stop")
