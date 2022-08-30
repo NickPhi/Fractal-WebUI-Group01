@@ -89,11 +89,11 @@ def MODE(mode):
         ON_end = time.time()
         run_time = ON_end - ON_start
         print(run_time)
-        #speaker_protection_("POWER_OFF")
+        speaker_protection_("POWER_OFF")
         signal_generator_("SIGNAL_OFF")
-        #signal_generator_("UNLOAD")
+        signal_generator_("UNLOAD")
         #signal_generator_("POWER_OFF")
-        #power_supply_amp_("OFF")
+        power_supply_amp_("OFF")
         if SEND_ACTIVE_UPDATES == "1":
             threadEmail("Normal", "OFF", "User clicked turn off  was on for: " + str(run_time))
 
@@ -120,6 +120,8 @@ def signal_generator_(mode):
         os.system('sudo ' + HOME_PATH + 'new-mhs5200a-12-bits/setwave5200 /dev/ttyUSB0 ' + HOME_PATH + '/.local/phi.csv' + '0')
     elif mode == "UNLOAD":
         os.system('sudo ' + HOME_PATH + 'new-mhs5200a-12-bits/setwave5200 /dev/ttyUSB0 ' + HOME_PATH + '/.local/zero.csv' + '0')
+        os.system('sudo ' + HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 arb 1 freq 364 off')
+        os.system('sudo ' + HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 arb 0 freq 364 off')
 
 
 def speaker_protection_(mode):
