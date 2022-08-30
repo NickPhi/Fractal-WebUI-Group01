@@ -26,7 +26,7 @@
     <span class="popuptext1" id="myPopup1">Turned ON</span>
     </div><div style="font-size: 40px;">Turn on</div></button>
 
-    <iframe class="home-message" src="https://www.metacafebliss.com" title="Iframe Example"></iframe>
+    <iframe id="webframe" class="home-message" src="https://www.metacafebliss.com" title="Iframe Example"></iframe>
     <script type="text/javascript"> $(function() { $("#offbutton").click(function (event) { $.getJSON('/turnoff', { },
         function(data) { }); return false; }); });
     </script>
@@ -57,4 +57,17 @@
     <button class="button button8" onclick="location.href='{{ url_for('alarm_settings') }}';">Alarm Settings</button>
     <button class="button button9" onclick="location.href='{{ url_for('wifi_back') }}';">Wifi</button>
 </div>
+
+<script>
+        window.setInterval(function() {
+            reloadIFrame()
+        }, 120000);
+
+        function reloadIFrame() {
+            console.log('reloading..');
+            var iframe = document.getElementById('webframe');
+            iframe.src = iframe.src;
+        }
+</script>
+
 {% endblock %}

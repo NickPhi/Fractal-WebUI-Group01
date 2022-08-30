@@ -1,4 +1,5 @@
 from Dashboard import threading, pyTasks, os, requests, json, time, date, subprocess, render_template
+import lgpio
 
 #  GLOBALS
 t1 = threading.Thread  # alarm thread
@@ -26,6 +27,7 @@ COMMAND = "null"
 SEND_ACTIVE_UPDATES = "null"  # 1 ON 0 OFF
 ONCE_INDEX = "0"
 
+
 # GLOBALS
 
 # if index is refreshed it may keep threads running may want to kill them unless index will never refresh
@@ -37,7 +39,6 @@ ONCE_INDEX = "0"
 
 def start_index():
     global ONCE_INDEX
-    # os.system("sudo /usr/bin/systemctl restart screen.service")
     if ONCE_INDEX == "0":
         if wifi_check():
             print("wifi pass")
@@ -50,10 +51,8 @@ def start_index():
             if user_authentication():
                 if SEND_ACTIVE_UPDATES == "1":
                     threadEmail("Normal", "user authenticated", "User authenticated")
-                # if update_check():
-                #   return render_template('system_reboot.html', response='Updated your version')
-                # else:
-                #    return render_template('index.html')
+                if update_check():
+                    return "Update"
                 ONCE_INDEX = "1"
                 t4 = threading.Thread(target=authentication_thread)
                 t4.start()
@@ -73,7 +72,10 @@ def start_index():
 ########################### HANDLES GPIO ##################################
 ###########################################################################
 
+
 def MODE(mode):
+    # h = lgpio.gpiochip_open(0)
+    # lgpio.gpio_write(h, 10, 1)
     global ON_start, ON_end
     if mode == "ON":
         ON_start = time.time()
@@ -319,36 +321,41 @@ def download_variables():
     global PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
         GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, COMMAND, SEND_ACTIVE_UPDATES, ADMIN_PHONE
     usr = requests.get(PATH + USER_NAME + '/user_settings.json')
-    gru = requests.get(PATH_ALT + USER_GROUP + '/group.json')
     j_ = usr.json()
-    i_ = gru.json()
     ADMIN_EMAIL = j_['ADMIN_EMAIL']
     ADMIN_PHONE = j_['ADMIN_PHONE']
     AUTHENTICATION = j_['AUTHENTICATION']
     UPDATE_GROUP_OR_USER = j_['UPDATE_GROUP_OR_USER']
     SEND_ACTIVE_UPDATES = j_['SEND_ACTIVE_UPDATES']
-    GROUP_VERSION = i_['GROUP_VERSION']
     USER_VERSION = j_['USER_VERSION']
-    GIT_GROUP = i_['GIT_GROUP']
     GIT_USER = j_['GIT_USER']
     COMMAND = j_['COMMAND']
+    gru = requests.get(PATH_ALT + USER_GROUP + '/group.json')
+    i_ = gru.json()
+    GIT_GROUP = i_['GIT_GROUP']
+    GROUP_VERSION = i_['GROUP_VERSION']
 
 
 def plug_Wifi(data):
     ssid = data['wifi_ssid']
     password = data['wifi_pass']
-    with open('/etc/network/interfaces', 'w') as file:
+    with open('/etc/netplan/50-cloud-init.yaml', 'w') as file:
         content = \
-            'source-directory /etc/network/interfaces.d\n\n' + \
-            'auto lo\n' + \
-            'iface lo inet loopback\n' + \
-            "iface eth0 inet dhcp\n" + \
-            'allow-hotplug wlan0\n' + \
-            'auto wlan0\n' + \
-            'auto wlan0\n' + \
-            'iface wlan0 inet dhcp\n' + \
-            'wpa-ssid "' + ssid + '"\n' + \
-            'wpa-psk "' + password + '"\n'
+            '''
+            network:
+                ethernets:
+                    eth0:
+                        dhcp4: true
+                        optional: true
+                version: 2
+                wifis:
+                  wlxe84e0698d8d4:
+                    optional: true
+                    access-points:
+                      "Frigge2":
+                        password: "1111111111"
+                    dhcp4: true
+            '''
         file.write(content)
     print("Write successful. Rebooting now.")
     restart_15()

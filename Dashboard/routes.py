@@ -13,6 +13,8 @@ def index():
         return render_template('index.html')
     elif Status == "Not-Authenticated":
         return render_template('payment.html', response=ADMIN_EMAIL)
+    elif Status == "Update":
+        return render_template('system_reboot.html', response='Updated your version')
     elif Status == "no-Wifi":
         return render_template('wifi.html')
 
