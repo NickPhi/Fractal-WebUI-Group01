@@ -1,5 +1,4 @@
 from Dashboard import threading, pyTasks, os, requests, json, time, date, subprocess, render_template
-import lgpio
 
 #  GLOBALS
 t1 = threading.Thread  # alarm thread
