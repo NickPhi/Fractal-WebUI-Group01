@@ -12,6 +12,7 @@ PATH = "https://metacafebliss.com/deep/users/"
 PATH_ALT = "https://metacafebliss.com/deep/"
 USER_GROUP = "01"  # temp remove for production
 USER_NAME = "01_001"  # temp remove for production
+WIFI_DRIVER_NAME = "wlxe84e0698d8d4"
 ADMIN_EMAIL = "null"
 ADMIN_PHONE = "null"
 EM_DATA = "analytics@metacafebliss.com"  # temp remove for production
@@ -280,6 +281,8 @@ def update_check():
             write_update(GIT_GROUP, NEW_PRJ_PATH)
             # update Json file in new path
             updateJsonFile("GROUP_UPDATE_VERSION", GROUP_VERSION, NEW_PRJ_PATH + "/_settings/application_data.json")
+            # update permissions
+            os.system("chmod -R o+rw /home/kiosk/" + NEW_PRJ_PATH + "/Dashboard/_settings")
             if SEND_ACTIVE_UPDATES == "1":
                 threadEmail("Normal", "Update", "User updated Group")
             restart_15()
@@ -295,6 +298,8 @@ def update_check():
             write_update(GIT_USER, NEW_PRJ_PATH)
             # update Json file in new path
             updateJsonFile("USER_UPDATE_VERSION", USER_VERSION, NEW_PRJ_PATH + "/_settings/application_data.json")
+            # update permissions
+            os.system("chmod -R o+rw /home/kiosk/" + NEW_PRJ_PATH + "/Dashboard/_settings")
             if SEND_ACTIVE_UPDATES == "1":
                 threadEmail("Normal", "Update", "User updated user version")
             restart_15()
@@ -340,21 +345,19 @@ def plug_Wifi(data):
     password = data['wifi_pass']
     with open('/etc/netplan/50-cloud-init.yaml', 'w') as file:
         content = \
-            '''
-            network:
+            '''network:
                 ethernets:
                     eth0:
                         dhcp4: true
                         optional: true
                 version: 2
                 wifis:
-                  wlxe84e0698d8d4:
+                  ''' + WIFI_DRIVER_NAME + ''':
                     optional: true
                     access-points:
                       "''' + ssid + '''":
                         password: "''' + password + '''"
-                    dhcp4: true
-            '''
+                    dhcp4: true'''
         file.write(content)
     print("Write successful. Rebooting now.")
     restart_15()
@@ -388,10 +391,9 @@ def write_update(git, NEW_PRJ_PATH):
             Environment=DISPLAY=:0.0
             Environment=XAUTHORITY=''' + XPATH + '''.Xauthority
             Type=simple
-            ExecStart=/usr/bin/python3''' + ' ' + NEW_PRJ_PATH + '''/app.py
+            ExecStart=/usr/bin/python3''' + ' ' + NEW_PRJ_PATH + '''/run.py
             Restart=on-abort
-            User=pi
-            Group=pi
+            User=kiosk
 
             [Install]
             WantedBy=multi-user.target    
