@@ -78,11 +78,11 @@ def MODE(mode):
     global ON_start, ON_end
     if mode == "ON":
         ON_start = time.time()
-        #power_supply_amp_("ON")
+        power_supply_amp_("ON")
         #signal_generator_("POWER_ON")  # signal generator takes some time to turn on.. should turn on with the RPi
-        #signal_generator_("LOAD")
+        signal_generator_("LOAD")
         signal_generator_("SIGNAL_ON")
-        #speaker_protection_("POWER_ON")
+        speaker_protection_("POWER_ON")
         if SEND_ACTIVE_UPDATES == "1":
             threadEmail("Normal", "ON", "User clicked turn on")
     elif mode == "OFF":
