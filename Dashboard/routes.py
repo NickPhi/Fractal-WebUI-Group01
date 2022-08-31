@@ -19,6 +19,7 @@ def index():
         elif Status == "no-Wifi":
             return render_template('wifi.html')
     if request.method == 'POST':
+        # Handles Alarm & Timer since we use AJAX to disable/enable when done
         btn_ajax_data = request.get_json()
         return button_controller(btn_ajax_data)
 

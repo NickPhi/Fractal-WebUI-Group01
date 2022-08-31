@@ -1,6 +1,6 @@
 import Dashboard.service
 from Dashboard import datetime, time, re, os
-from Dashboard.service import readJsonValueFromKey, MODE, power_supply_amp_, signal_generator_, speaker_protection_
+from Dashboard.service import readJsonValueFromKey, MODE, power_supply_amp_, signal_generator_, MODE_RUNNING
 stop_threads = False
 
 
@@ -55,8 +55,12 @@ def alarm_start():
         power_supply_amp_("ON")
         signal_generator_("POWER_ON")
         time.sleep(30)
+        while MODE_RUNNING:
+            time.sleep(0.02)
         MODE("ON")  # for how long
         time.sleep(float(readJsonValueFromKey("USER_TIMER", filePath)) * 60)
+        while MODE_RUNNING:
+            time.sleep(0.02)
         MODE("OFF")
     print("Alarm stop")
     print(Dashboard.service.alarm_state + " in thread")

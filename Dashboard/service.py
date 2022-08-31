@@ -29,7 +29,8 @@ SEND_ACTIVE_UPDATES = "null"  # 1 ON 0 OFF
 ONCE_INDEX = "0"
 POWER_SUP_STATE = "0"
 POWER_GEN_STATE = "0"
-MODE_STATE = False
+MODE_RUNNING = False
+MODE_STATE = "null"
 
 # GLOBALS
 
@@ -82,22 +83,25 @@ def start_index():
 
 
 def MODE(mode):
-    global ON_start, ON_end, POWER_SUP_STATE, POWER_GEN_STATE, MODE_STATE
+    global ON_start, ON_end, POWER_SUP_STATE, POWER_GEN_STATE, MODE_RUNNING, MODE_STATE
     if mode == "ON":
-        if MODE_STATE:  # does this eliminate the need for ajax
+        if MODE_RUNNING:  # does this eliminate the need for ajax
             return
-        MODE_STATE = True
+        if MODE_STATE == "ON":
+            return
+        MODE_RUNNING = True
+        MODE_STATE = "ON"
         ON_start = time.time()
-        speaker_protection_("OFF")  # this may be a problem, if on clicked twice signal gen stays on this is turned off
+        # speaker_protection_("OFF")  # this may be a problem, if on clicked twice signal gen stays on this is turned off
         signal_generator_("SIGNAL_ON")
         speaker_protection_("ON")
         if SEND_ACTIVE_UPDATES == "1":
             threadEmail("Normal", "ON", "User clicked turn on")
-        MODE_STATE = False
+        MODE_RUNNING = False
     elif mode == "OFF":
-        if MODE_STATE:
+        if MODE_RUNNING:
             return
-        MODE_STATE = True
+        MODE_RUNNING = True
         ON_end = time.time()
         run_time = ON_end - ON_start
         print(run_time)
@@ -105,7 +109,8 @@ def MODE(mode):
         signal_generator_("SIGNAL_OFF")
         if SEND_ACTIVE_UPDATES == "1":
             threadEmail("Normal", "OFF", "User clicked turn off  was on for: " + str(run_time))
-        MODE_STATE = False
+        MODE_RUNNING = False
+        MODE_STATE = "OFF"
 
 
 def power_supply_amp_(mode):
@@ -580,7 +585,7 @@ def authentication_thread():
 
 
 def button_controller(data):
-    global alarm_state, timer_state, MODE_STATE
+    global alarm_state, timer_state, MODE_RUNNING
     print(data)
     if "timerButton" in data:
         if timer_state == "ON":
@@ -608,7 +613,7 @@ def timer_thread(mode):
         pyTasks.timer.stop_threads = False
         t2 = threading.Thread(target=pyTasks.timer.timer_start)
         t2.start()
-        while MODE_STATE:
+        while MODE_RUNNING:
             time.sleep(0.02)
         MODE("ON")
         timer_state = "ON"
@@ -619,7 +624,7 @@ def timer_thread(mode):
         t2.join()
         while t2.is_alive():
             time.sleep(0.07)  # works well but javascript front end isn't connected or aligned.
-        while MODE_STATE:
+        while MODE_RUNNING:
             time.sleep(0.02)
         MODE("OFF")
         timer_state = "OFF"
@@ -634,8 +639,9 @@ def alarm_thread(mode):
         t1 = threading.Thread(target=pyTasks.alarm.alarm_start)
         t1.start()
         # turn everything off
-        speaker_protection_("OFF")
-        signal_generator_("SIGNAL_OFF")
+        while MODE_RUNNING:
+            time.sleep(0.02)
+        MODE("OFF")
         signal_generator_("POWER_OFF")
         power_supply_amp_("OFF")
         time.sleep(0.07)
