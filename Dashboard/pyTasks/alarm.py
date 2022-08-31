@@ -59,5 +59,4 @@ def alarm_start():
         time.sleep(float(readJsonValueFromKey("USER_TIMER", filePath)) * 60)
         MODE("OFF")
     print("Alarm stop")
-    Dashboard.service.alarm_state = "OFF"
     print(Dashboard.service.alarm_state + " in thread")

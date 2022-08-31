@@ -612,14 +612,13 @@ def run_alarm():
         # alarm_state = "OFF"
     elif alarm_state == "OFF":
         alarm_thread("start")
-        alarm_state = "ON"
     else:  # Initialization
         alarm_thread("start")
         alarm_state = "ON"
 
 
 def alarm_thread(mode):
-    global t1
+    global t1, alarm_state
     if mode == "start":
         pyTasks.alarm.stop_threads = False
         t1 = threading.Thread(target=pyTasks.alarm.alarm_start)
@@ -629,18 +628,20 @@ def alarm_thread(mode):
         signal_generator_("SIGNAL_OFF")
         signal_generator_("POWER_OFF")
         power_supply_amp_("OFF")
+        time.sleep(0.07)
+        alarm_state = "ON"
         if SEND_ACTIVE_UPDATES == "1":
             threadEmail("Normal", "Alarm started", "Alarm started")
     if mode == "stop":
         pyTasks.alarm.stop_threads = True
         t1.join()
-        # do until alarm state == off?
-        print(alarm_state)
+        while t1.is_alive():
+            time.sleep(0.07)
         power_supply_amp_("ON")
         signal_generator_("POWER_ON")
+        alarm_state = "OFF"
         if SEND_ACTIVE_UPDATES == "1":
             threadEmail("Normal", "Alarm stopped", "Alarm stopped")
-        time.sleep(30)
 
 # Notes to self:
 # check all css/js links for any that need internet and download them
