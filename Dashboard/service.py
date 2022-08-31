@@ -208,22 +208,6 @@ def run_timer():
         timer_state = "ON"
 
 
-def run_alarm():
-    global alarm_state
-    if alarm_state == "ON":
-        alarm_thread("stop")
-        time.sleep(10)
-        alarm_state = "OFF"
-    elif alarm_state == "OFF":
-        alarm_thread("start")
-        time.sleep(10)
-        alarm_state = "ON"
-    else:  # Initialization
-        alarm_thread("start")
-        time.sleep(10)
-        alarm_state = "ON"
-
-
 def authentication():
     print(threading.active_count())
     if wifi_check():
@@ -621,25 +605,39 @@ def timer_thread(mode):
             threadEmail("Normal", "Timer stopped", "Timer stopped")
 
 
+def run_alarm():
+    global alarm_state
+    if alarm_state == "ON":
+        alarm_thread("stop")
+        # alarm_state = "OFF"
+    elif alarm_state == "OFF":
+        alarm_thread("start")
+        alarm_state = "ON"
+    else:  # Initialization
+        alarm_thread("start")
+        alarm_state = "ON"
+
+
 def alarm_thread(mode):
     global t1
     if mode == "start":
         pyTasks.alarm.stop_threads = False
+        t1 = threading.Thread(target=pyTasks.alarm.alarm_start)
+        t1.start()
         # turn everything off
         speaker_protection_("OFF")
         signal_generator_("SIGNAL_OFF")
         signal_generator_("POWER_OFF")
         power_supply_amp_("OFF")
-        t1 = threading.Thread(target=pyTasks.alarm.alarm_start)
-        t1.start()
         if SEND_ACTIVE_UPDATES == "1":
             threadEmail("Normal", "Alarm started", "Alarm started")
     if mode == "stop":
-        time.sleep(0.1)
         pyTasks.alarm.stop_threads = True
+        t1.join()
+        # do until alarm state == off?
+        print(alarm_state)
         power_supply_amp_("ON")
         signal_generator_("POWER_ON")
-        t1.join()
         if SEND_ACTIVE_UPDATES == "1":
             threadEmail("Normal", "Alarm stopped", "Alarm stopped")
         time.sleep(30)
