@@ -10,7 +10,7 @@ def timer_start():
     MODE("ON")
     global stop_threads
     stop_threads = False
-    filePath = os.path.abspath(os.curdir) + "/Dashboard/_settings/application_data.json"
+    filePath = os.path.abspath(os.curdir) + "/Fractal-WebUI-Group01/Dashboard/_settings/application_data.json"
     user_time = readJsonValueFromKey("USER_TIMER", filePath)
     total_seconds = float(user_time) * 60
 
