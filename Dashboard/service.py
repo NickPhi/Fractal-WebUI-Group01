@@ -29,7 +29,7 @@ SEND_ACTIVE_UPDATES = "null"  # 1 ON 0 OFF
 ONCE_INDEX = "0"
 POWER_SUP_STATE = "0"
 POWER_GEN_STATE = "0"
-
+MODE_STATE = "0"
 
 # GLOBALS
 
@@ -82,15 +82,18 @@ def start_index():
 
 
 def MODE(mode):
-    global ON_start, ON_end, POWER_SUP_STATE, POWER_GEN_STATE
+    global ON_start, ON_end, POWER_SUP_STATE, POWER_GEN_STATE, MODE_STATE
     if mode == "ON":
+        MODE_STATE = "0"
         ON_start = time.time()
         speaker_protection_("OFF")
         signal_generator_("SIGNAL_ON")
         speaker_protection_("ON")
         if SEND_ACTIVE_UPDATES == "1":
             threadEmail("Normal", "ON", "User clicked turn on")
+        MODE_STATE = "1"
     elif mode == "OFF":
+        MODE_STATE = "0"
         ON_end = time.time()
         run_time = ON_end - ON_start
         print(run_time)
@@ -98,6 +101,7 @@ def MODE(mode):
         signal_generator_("SIGNAL_OFF")
         if SEND_ACTIVE_UPDATES == "1":
             threadEmail("Normal", "OFF", "User clicked turn off  was on for: " + str(run_time))
+        MODE_STATE = "1"
 
 
 def power_supply_amp_(mode):
@@ -572,14 +576,18 @@ def authentication_thread():
 
 
 def button_controller(data):
-    global alarm_state, timer_state
+    global alarm_state, timer_state, MODE_STATE
     print(data)
     if "onbutton" in data:
         MODE("ON")
+        while MODE_STATE == "0":
+            time.sleep(0.02)
         results = {'processed': 'true'}
         return jsonify(results)
     if "offbutton" in data:
-        MODE("OFF")
+        MODE("OFF")  # got stuck then they flip flopped
+        while MODE_STATE == "0":
+            time.sleep(0.02)
         results = {'processed': 'true'}
         return jsonify(results)
     if "timerButton" in data:
