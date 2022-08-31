@@ -5,6 +5,9 @@ stop_threads = False
 
 
 def timer_start():
+    while MODE_RUNNING:
+        time.sleep(0.02)
+    MODE("ON")
     global stop_threads
     filePath = os.path.abspath(os.curdir) + "/Dashboard/_settings/application_data.json"
     user_time = readJsonValueFromKey("USER_TIMER", filePath)
