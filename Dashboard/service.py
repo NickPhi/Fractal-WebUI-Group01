@@ -557,6 +557,7 @@ def save_downloaded_variables_to_profile():
     updateJsonFile("COMMAND", COMMAND, filePath)
     updateJsonFile("GIT_GROUP", GIT_GROUP, filePath)
     updateJsonFile("GROUP_VERSION", GROUP_VERSION, filePath)
+    updateJsonFile("LOADED", AUTHENTICATION, filePath)
 
 
 def updateJsonFile(Key, Value, filePath):
@@ -588,7 +589,7 @@ def threadEmail(target, subject, text):
 
 
 def authentication_thread():
-    total_minutes = 1
+    total_minutes = 20
     while total_minutes > 0:
         time.sleep(60)
         total_minutes -= 1
