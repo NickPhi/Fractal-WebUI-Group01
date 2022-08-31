@@ -208,27 +208,27 @@ def run_timer():
 def run_alarm():
     global alarm_state
     if alarm_state == "ON":
-        alarm_thread("stop")
-        alarm_state = "OFF"
         # if on then turn off or reset power supply/signal generator
         power_supply_amp_("ON")
         signal_generator_("POWER_ON")
+        alarm_thread("stop")
+        alarm_state = "OFF"
     elif alarm_state == "OFF":
-        alarm_thread("start")
-        alarm_state = "ON"
         # turn everything off
         speaker_protection_("OFF")
         signal_generator_("SIGNAL_OFF")
         signal_generator_("POWER_OFF")
         power_supply_amp_("OFF")
+        alarm_thread("start")
+        alarm_state = "ON"
     else:  # Initialization
-        alarm_thread("start")
-        alarm_state = "ON"
         # turn everything off
         speaker_protection_("OFF")
         signal_generator_("SIGNAL_OFF")
         signal_generator_("POWER_OFF")
         power_supply_amp_("OFF")
+        alarm_thread("start")
+        alarm_state = "ON"
 
 
 def authentication():
