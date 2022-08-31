@@ -1,4 +1,4 @@
-from Dashboard import threading, pyTasks, os, requests, json, time, date, subprocess, render_template
+from Dashboard import threading, pyTasks, os, requests, json, time, date, subprocess, render_template, jsonify
 
 #  GLOBALS
 t1 = threading.Thread  # alarm thread
@@ -190,22 +190,6 @@ def restart():
     time.sleep(15)
     os.system('sudo reboot')
     # try, catch, kill thread, display error
-
-
-def run_timer():
-    global timer_state
-    if timer_state == "ON":
-        timer_thread("stop")
-        time.sleep(10)
-        timer_state = "OFF"
-    elif timer_state == "OFF":
-        timer_thread("start")
-        time.sleep(10)
-        timer_state = "ON"
-    else:  # Initialization
-        timer_thread("start")
-        time.sleep(10)
-        timer_state = "ON"
 
 
 def authentication():
@@ -587,34 +571,57 @@ def authentication_thread():
     authentication_thread()
 
 
+def button_controller(data):
+    global alarm_state, timer_state
+    print(data)
+    if "onbutton" in data:
+        MODE("ON")
+        results = {'processed': 'true'}
+        return jsonify(results)
+    if "offbutton" in data:
+        MODE("OFF")
+        results = {'processed': 'true'}
+        return jsonify(results)
+    if "timerButton" in data:
+        if timer_state == "ON":
+            timer_thread("stop")
+        elif timer_state == "OFF":
+            timer_thread("start")
+        else:  # Initialization
+            timer_thread("start")
+        results = {'processed': 'true'}
+        return jsonify(results)
+    if "alarmButton" in data:
+        if alarm_state == "ON":
+            alarm_thread("stop")
+        elif alarm_state == "OFF":
+            alarm_thread("start")
+        else:  # Initialization
+            alarm_thread("start")
+        results = {'processed': 'true'}
+        return jsonify(results)
+
+
 def timer_thread(mode):
-    global t2
+    global t2, timer_state
     if mode == "start":
         pyTasks.timer.stop_threads = False
-        MODE("ON")
         t2 = threading.Thread(target=pyTasks.timer.timer_start)
         t2.start()
+        MODE("ON")
+        time.sleep(0.07)
+        timer_state = "ON"
         if SEND_ACTIVE_UPDATES == "1":
             threadEmail("Normal", "Timer started", "Timer started")
     if mode == "stop":
-        time.sleep(0.1)
         pyTasks.timer.stop_threads = True
-        MODE("OFF")
         t2.join()
+        while t2.is_alive():
+            time.sleep(0.07)  # works well but javascript front end isn't connected or aligned
+        MODE("OFF")
+        timer_state = "OFF"
         if SEND_ACTIVE_UPDATES == "1":
             threadEmail("Normal", "Timer stopped", "Timer stopped")
-
-
-def run_alarm():
-    global alarm_state
-    if alarm_state == "ON":
-        alarm_thread("stop")
-        # alarm_state = "OFF"
-    elif alarm_state == "OFF":
-        alarm_thread("start")
-    else:  # Initialization
-        alarm_thread("start")
-        alarm_state = "ON"
 
 
 def alarm_thread(mode):
@@ -636,7 +643,7 @@ def alarm_thread(mode):
         pyTasks.alarm.stop_threads = True
         t1.join()
         while t1.is_alive():
-            time.sleep(0.07)
+            time.sleep(0.07)  # works well but javascript front end isn't connected or aligned
         power_supply_amp_("ON")
         signal_generator_("POWER_ON")
         alarm_state = "OFF"

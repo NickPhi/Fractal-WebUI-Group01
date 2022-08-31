@@ -10,7 +10,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import smtplib
 import flask
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
 

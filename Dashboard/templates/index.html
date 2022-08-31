@@ -18,36 +18,84 @@
 
 {% block content %}
 <div class="container">
-    <script type="text/javascript">$(function() { $("#onbutton").click(function (event) { $.getJSON('/turnon', { },
-        function(data) { }); return false; }); });
+    <script type="text/javascript">$(function() { $("#onbutton").click(function (event) {
+    $.ajax({
+      type: "POST",
+      url: "/",
+      data: JSON.stringify({"onbutton":"yes"}),
+      contentType: "application/json",
+      dataType: 'json',
+      success: function(result) {
+        console.log("Result:");
+        console.log(result);
+        $("#onbutton").attr("disabled", false);
+        timeFunction1();}});
+        document.getElementById("onbutton").disabled = true;
+        console.log("btn disabled"); return false; }); });
     </script>
 
-	<button class="button button1" id="onbutton" onclick="timeFunction1()"><div class="popup1">
+	<button class="button button1" id="onbutton"><div class="popup1">
     <span class="popuptext1" id="myPopup1">Turned ON</span>
     </div><div style="font-size: 40px;">Turn on</div></button>
 
     <iframe id="webframe" class="home-message" src="https://www.metacafebliss.com" title="Iframe Example"></iframe>
-    <script type="text/javascript"> $(function() { $("#offbutton").click(function (event) { $.getJSON('/turnoff', { },
-        function(data) { }); return false; }); });
+    <script type="text/javascript"> $(function() { $("#offbutton").click(function (event) {
+    $.ajax({
+      type: "POST",
+      url: "/",
+      data: JSON.stringify({"offbutton":"yes"}),
+      contentType: "application/json",
+      dataType: 'json',
+      success: function(result) {
+        console.log("Result:");
+        console.log(result);
+        $("#offbutton").attr("disabled", false);
+        timeFunction2();}});
+        document.getElementById("offbutton").disabled = true;
+        console.log("btn disabled"); return false; }); });
     </script>
 
-    <button class="button button2" id="offbutton" onclick="timeFunction2()"><div class="popup2">
+    <button class="button button2" id="offbutton"><div class="popup2">
     <span class="popuptext2" id="myPopup2">Turned OFF</span>
     </div><div style="font-size: 40px;">Turn off</div></button>
 
-    <script type=text/javascript> $(function() { $("#timerButton").click(function (event) { $.getJSON('/timer', { },
-        function(data) { }); return false; }); });
+    <script type=text/javascript> $(function() { $("#timerButton").click(function (event) {
+    $.ajax({
+      type: "POST",
+      url: "/",
+      data: JSON.stringify({"timerButton":"yes"}),
+      contentType: "application/json",
+      dataType: 'json',
+      success: function(result) {
+        console.log("Result:");
+        console.log(result);
+        $("#timerButton").attr("disabled", false);
+        timeFunction4();}});
+        document.getElementById("timerButton").disabled = true;
+        console.log("btn disabled"); return false; }); });
     </script>
 
-    <button class="button button4" id="timerButton" onclick="timeFunction4()"><div class="popup4">
+    <button class="button button4" id="timerButton"><div class="popup4">
     <span class="popuptext4" id="myPopup4">Timer Disabled</span>
     </div><div style="font-size: 40px;">Timer ON/OFF</div></button>
 
-    <script type=text/javascript> $(function() { $("#alarmButton").click(function (event) { $.getJSON('/alarm', { },
-        function(data) { }); return false; }); });
+    <script type=text/javascript> $(function() { $("#alarmButton").click(function (event) {
+    $.ajax({
+      type: "POST",
+      url: "/",
+      data: JSON.stringify({"alarmButton":"yes"}),
+      contentType: "application/json",
+      dataType: 'json',
+      success: function(result) {
+        console.log("Result:");
+        console.log(result);
+        $("#alarmButton").attr("disabled", false);
+        timeFunction5();}});
+        document.getElementById("alarmButton").disabled = true;
+        console.log("btn disabled"); return false; }); });
     </script>
 
-    <button class="button button5" id="alarmButton" onclick="timeFunction5()"><div class="popup5">
+    <button class="button button5" id="alarmButton"><div class="popup5">
     <span class="popuptext5" id="myPopup5">Alarm Disabled</span>
     </div><div style="font-size: 40px;">Alarm <br>ON/OFF</div></button>
 

@@ -1,46 +1,50 @@
 import Dashboard.service
 from Dashboard import app, threading
-from flask import render_template, request
-from Dashboard.service import start_index, MODE, run_settings, plug_Wifi, plug_timer, plug_alarm, run_alarm, run_timer
+from flask import render_template, request, jsonify
+from Dashboard.service import start_index, run_settings, plug_Wifi, plug_timer, plug_alarm, button_controller
 
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    Status = start_index()
-    if Status == "Load_Index":
-        return render_template('index.html')
-    elif Status == "Authenticated":
-        return render_template('index.html')
-    elif Status == "Not-Authenticated":
-        return render_template('payment.html', response=Dashboard.service.ADMIN_EMAIL)
-    elif Status == "Update":
-        return render_template('system_reboot.html', response='Updated your version')
-    elif Status == "no-Wifi":
-        return render_template('wifi.html')
+    if request.method == 'GET':
+        Status = start_index()
+        if Status == "Load_Index":
+            return render_template('index.html')
+        elif Status == "Authenticated":
+            return render_template('index.html')
+        elif Status == "Not-Authenticated":
+            return render_template('payment.html', response=Dashboard.service.ADMIN_EMAIL)
+        elif Status == "Update":
+            return render_template('system_reboot.html', response='Updated your version')
+        elif Status == "no-Wifi":
+            return render_template('wifi.html')
+    if request.method == 'POST':
+        btn_ajax_data = request.get_json()
+        return button_controller(btn_ajax_data)
 
 
-@app.route('/turnon')
-def turnon():
-    MODE("ON")
-    return "Complete"
+#@app.route('/turnon')
+#def turnon():
+#    MODE("ON")
+#    return "Complete"
 
 
-@app.route('/turnoff')
-def turnoff():
-    MODE("OFF")
-    return "Complete"
+#@app.route('/turnoff')
+#def turnoff():
+#    MODE("OFF")
+#    return "Complete"
 
 
-@app.route('/alarm')
-def alarm():
-    run_alarm()
-    return "Complete"
+#@app.route('/alarm')
+#def alarm():
+#    run_alarm()
+#    return "Complete"
 
 
-@app.route('/timer')
-def timer():
-    run_timer()
-    return "Complete"
+#@app.route('/timer')
+#def timer():
+#    run_timer()
+#    return "Complete"
 
 
 @app.route('/settings.html', methods=['GET', 'POST'])
