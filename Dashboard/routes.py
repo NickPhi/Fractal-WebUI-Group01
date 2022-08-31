@@ -1,7 +1,7 @@
 import Dashboard.service
 from Dashboard import app, threading
 from flask import render_template, request, jsonify
-from Dashboard.service import start_index, run_settings, plug_Wifi, plug_timer, plug_alarm, button_controller
+from Dashboard.service import start_index, run_settings, plug_Wifi, plug_timer, plug_alarm, button_controller, MODE
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -23,16 +23,16 @@ def index():
         return button_controller(btn_ajax_data)
 
 
-#@app.route('/turnon')
-#def turnon():
-#    MODE("ON")
-#    return "Complete"
+@app.route('/turnon')
+def turnon():
+    MODE("ON")
+    return "Complete"
 
 
-#@app.route('/turnoff')
-#def turnoff():
-#    MODE("OFF")
-#    return "Complete"
+@app.route('/turnoff')
+def turnoff():
+    MODE("OFF")
+    return "Complete"
 
 
 #@app.route('/alarm')

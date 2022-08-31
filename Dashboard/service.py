@@ -84,11 +84,11 @@ def start_index():
 def MODE(mode):
     global ON_start, ON_end, POWER_SUP_STATE, POWER_GEN_STATE, MODE_STATE
     if mode == "ON":
-        if MODE_STATE:
+        if MODE_STATE:  # does this eliminate the need for ajax
             return
         MODE_STATE = True
         ON_start = time.time()
-        speaker_protection_("OFF")
+        speaker_protection_("OFF")  # this may be a problem, if on clicked twice signal gen stays on this is turned off
         signal_generator_("SIGNAL_ON")
         speaker_protection_("ON")
         if SEND_ACTIVE_UPDATES == "1":
@@ -582,14 +582,6 @@ def authentication_thread():
 def button_controller(data):
     global alarm_state, timer_state, MODE_STATE
     print(data)
-    if "onbutton" in data:
-        MODE("ON")
-        results = {'processed': 'true'}
-        return jsonify(results)
-    if "offbutton" in data:
-        MODE("OFF")  # got stuck then they flip flopped
-        results = {'processed': 'true'}
-        return jsonify(results)
     if "timerButton" in data:
         if timer_state == "ON":
             timer_thread("stop")
@@ -616,8 +608,9 @@ def timer_thread(mode):
         pyTasks.timer.stop_threads = False
         t2 = threading.Thread(target=pyTasks.timer.timer_start)
         t2.start()
+        while MODE_STATE:
+            time.sleep(0.02)
         MODE("ON")
-        time.sleep(0.07)
         timer_state = "ON"
         if SEND_ACTIVE_UPDATES == "1":
             threadEmail("Normal", "Timer started", "Timer started")
@@ -625,7 +618,9 @@ def timer_thread(mode):
         pyTasks.timer.stop_threads = True
         t2.join()
         while t2.is_alive():
-            time.sleep(0.07)  # works well but javascript front end isn't connected or aligned
+            time.sleep(0.07)  # works well but javascript front end isn't connected or aligned.
+        while MODE_STATE:
+            time.sleep(0.02)
         MODE("OFF")
         timer_state = "OFF"
         if SEND_ACTIVE_UPDATES == "1":
