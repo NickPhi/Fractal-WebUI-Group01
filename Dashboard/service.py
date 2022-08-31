@@ -208,25 +208,12 @@ def run_timer():
 def run_alarm():
     global alarm_state
     if alarm_state == "ON":
-        # if on then turn off or reset power supply/signal generator
-        power_supply_amp_("ON")
-        signal_generator_("POWER_ON")
         alarm_thread("stop")
         alarm_state = "OFF"
     elif alarm_state == "OFF":
-        # turn everything off
-        speaker_protection_("OFF")
-        signal_generator_("SIGNAL_OFF")
-        signal_generator_("POWER_OFF")
-        power_supply_amp_("OFF")
         alarm_thread("start")
         alarm_state = "ON"
     else:  # Initialization
-        # turn everything off
-        speaker_protection_("OFF")
-        signal_generator_("SIGNAL_OFF")
-        signal_generator_("POWER_OFF")
-        power_supply_amp_("OFF")
         alarm_thread("start")
         alarm_state = "ON"
 
@@ -614,6 +601,7 @@ def timer_thread(mode):
     global t2
     if mode == "start":
         pyTasks.timer.stop_threads = False
+        MODE("ON")
         t2 = threading.Thread(target=pyTasks.timer.timer_start)
         t2.start()
         if SEND_ACTIVE_UPDATES == "1":
@@ -621,6 +609,7 @@ def timer_thread(mode):
     if mode == "stop":
         time.sleep(0.1)
         pyTasks.timer.stop_threads = True
+        MODE("OFF")
         t2.join()
         if SEND_ACTIVE_UPDATES == "1":
             threadEmail("Normal", "Timer stopped", "Timer stopped")
@@ -630,6 +619,11 @@ def alarm_thread(mode):
     global t1
     if mode == "start":
         pyTasks.alarm.stop_threads = False
+        # turn everything off
+        speaker_protection_("OFF")
+        signal_generator_("SIGNAL_OFF")
+        signal_generator_("POWER_OFF")
+        power_supply_amp_("OFF")
         t1 = threading.Thread(target=pyTasks.alarm.alarm_start)
         t1.start()
         if SEND_ACTIVE_UPDATES == "1":
@@ -637,6 +631,8 @@ def alarm_thread(mode):
     if mode == "stop":
         time.sleep(0.1)
         pyTasks.alarm.stop_threads = True
+        power_supply_amp_("ON")
+        signal_generator_("POWER_ON")
         t1.join()
         if SEND_ACTIVE_UPDATES == "1":
             threadEmail("Normal", "Alarm stopped", "Alarm stopped")
