@@ -613,9 +613,9 @@ def timer_thread(mode):
         pyTasks.timer.stop_threads = False
         t2 = threading.Thread(target=pyTasks.timer.timer_start)
         t2.start()
-        #while MODE_RUNNING:
-        #    time.sleep(0.02)
-        #MODE("ON")
+        while MODE_RUNNING:
+            time.sleep(0.02)
+        MODE("ON")
         timer_state = "ON"
         if SEND_ACTIVE_UPDATES == "1":
             threadEmail("Normal", "Timer started", "Timer started")

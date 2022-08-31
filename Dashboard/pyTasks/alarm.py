@@ -18,7 +18,7 @@ def isValidTime(time):
 
 
 def alarm_start():
-    filePath = os.path.abspath(os.curdir) + "/Fractal-WebUI-Group01/Dashboard/_settings/application_data.json"
+    filePath = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '_settings')) + "/application_data.json"
     user_time = readJsonValueFromKey("USER_ALARM", filePath)
 
     #  check for correct format
