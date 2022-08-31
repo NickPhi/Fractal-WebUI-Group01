@@ -55,6 +55,7 @@ def alarm_start():
         power_supply_amp_("ON")
         signal_generator_("POWER_ON")
         time.sleep(30)
+        Dashboard.service.MODE_RUNNING = False
         while MODE_RUNNING:
             time.sleep(0.02)
         MODE("ON")  # for how long
@@ -63,4 +64,3 @@ def alarm_start():
             time.sleep(0.02)
         MODE("OFF")
     print("Alarm stop")
-    print(Dashboard.service.alarm_state + " in thread")

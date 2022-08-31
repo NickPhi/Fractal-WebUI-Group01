@@ -633,7 +633,7 @@ def timer_thread(mode):
 
 
 def alarm_thread(mode):
-    global t1, alarm_state
+    global t1, alarm_state, MODE_RUNNING
     if mode == "start":
         pyTasks.alarm.stop_threads = False
         t1 = threading.Thread(target=pyTasks.alarm.alarm_start)
@@ -642,6 +642,7 @@ def alarm_thread(mode):
         while MODE_RUNNING:
             time.sleep(0.02)
         MODE("OFF")
+        MODE_RUNNING = True  # stops all options running
         signal_generator_("POWER_OFF")
         power_supply_amp_("OFF")
         time.sleep(0.07)
@@ -652,10 +653,11 @@ def alarm_thread(mode):
         pyTasks.alarm.stop_threads = True
         t1.join()
         while t1.is_alive():
-            time.sleep(0.07)  # works well but javascript front end isn't connected or aligned
+            time.sleep(0.07)
         power_supply_amp_("ON")
         signal_generator_("POWER_ON")
         time.sleep(30)  # maybe something better
+        MODE_RUNNING = False  # allows things to run again
         alarm_state = "OFF"
         if SEND_ACTIVE_UPDATES == "1":
             threadEmail("Normal", "Alarm stopped", "Alarm stopped")
