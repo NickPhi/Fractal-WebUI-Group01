@@ -36,6 +36,7 @@
     </div><div style="font-size: 40px;">Turn off</div></button>
 
     <script type=text/javascript> $(function() { $("#timerButton").click(function (event) {
+    timeFunction4();
     $.ajax({
       type: "POST",
       url: "/",
@@ -46,7 +47,7 @@
         console.log("Result:");
         console.log(result);
         $("#timerButton").attr("disabled", false);
-        timeFunction4();}});
+        }});
         document.getElementById("timerButton").disabled = true;
         console.log("btn disabled"); return false; }); });
     </script>
@@ -56,6 +57,7 @@
     </div><div style="font-size: 40px;">Timer ON/OFF</div></button>
 
     <script type=text/javascript> $(function() { $("#alarmButton").click(function (event) {
+    timeFunction5();
     $.ajax({
       type: "POST",
       url: "/",
@@ -66,7 +68,7 @@
         console.log("Result:");
         console.log(result);
         $("#alarmButton").attr("disabled", false);
-        timeFunction5();}});
+        }});
         document.getElementById("alarmButton").disabled = true;
         console.log("btn disabled"); return false; }); });
     </script>
