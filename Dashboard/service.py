@@ -196,12 +196,15 @@ def run_timer():
     global timer_state
     if timer_state == "ON":
         timer_thread("stop")
+        time.sleep(10)
         timer_state = "OFF"
     elif timer_state == "OFF":
         timer_thread("start")
+        time.sleep(10)
         timer_state = "ON"
     else:  # Initialization
         timer_thread("start")
+        time.sleep(10)
         timer_state = "ON"
 
 
@@ -209,12 +212,15 @@ def run_alarm():
     global alarm_state
     if alarm_state == "ON":
         alarm_thread("stop")
+        time.sleep(10)
         alarm_state = "OFF"
     elif alarm_state == "OFF":
         alarm_thread("start")
+        time.sleep(10)
         alarm_state = "ON"
     else:  # Initialization
         alarm_thread("start")
+        time.sleep(10)
         alarm_state = "ON"
 
 

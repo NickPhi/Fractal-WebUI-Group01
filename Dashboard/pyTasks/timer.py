@@ -1,5 +1,6 @@
+import Dashboard.service
 from Dashboard import time, os
-from Dashboard.service import readJsonValueFromKey, MODE
+from Dashboard.service import readJsonValueFromKey
 import datetime
 stop_threads = False
 
@@ -18,5 +19,5 @@ def timer_start():
         time.sleep(1)
         total_seconds -= 1
     if not stop_threads:
-        MODE("OFF")
+        Dashboard.service.MODE("OFF")
     print("Timer Stop")
