@@ -655,6 +655,7 @@ def alarm_thread(mode):
             time.sleep(0.07)  # works well but javascript front end isn't connected or aligned
         power_supply_amp_("ON")
         signal_generator_("POWER_ON")
+        time.sleep(30)  # maybe something better
         alarm_state = "OFF"
         if SEND_ACTIVE_UPDATES == "1":
             threadEmail("Normal", "Alarm stopped", "Alarm stopped")
