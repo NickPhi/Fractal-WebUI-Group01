@@ -589,7 +589,7 @@ def threadEmail(target, subject, text):
 
 
 def authentication_thread():
-    total_minutes = 20
+    total_minutes = 1
     while total_minutes > 0:
         time.sleep(60)
         total_minutes -= 1
