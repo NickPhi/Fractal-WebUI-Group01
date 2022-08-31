@@ -80,6 +80,8 @@
     </div><div style="font-size: 40px;">Timer ON/OFF</div></button>
 
     <script type=text/javascript> $(function() { $("#alarmButton").click(function (event) {
+    document.getElementById("alarmButton").disabled = true;
+    console.log("btn disabled");
     $.ajax({
       type: "POST",
       url: "/",
@@ -91,8 +93,8 @@
         console.log(result);
         $("#alarmButton").attr("disabled", false);
         timeFunction5();}});
-        document.getElementById("alarmButton").disabled = true;
-        console.log("btn disabled"); return false; }); });
+        console.log("btn enabled");
+      return false; }); });
     </script>
 
     <button class="button button5" id="alarmButton"><div class="popup5">
