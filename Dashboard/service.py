@@ -115,10 +115,10 @@ def signal_generator_(mode):
     elif mode == "POWER_OFF":
         os.system('sudo gpioset 1 92=1')
     elif mode == "SIGNAL_ON":
-        os.system('sudo ' + HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 arb 0 freq 364 on')
+        os.system('sudo ' + HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 arb 0 amplitude 4 freq 364 on')
         time.sleep(.4)
     elif mode == "SIGNAL_OFF":
-        os.system('sudo ' + HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 arb 0 freq 364 off')
+        os.system('sudo ' + HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 arb 0 amplitude 4 freq 364 off')
         time.sleep(.4)
     elif mode == "LOAD":
         os.system('sudo ' + HOME_PATH + 'new-mhs5200a-12-bits/setwave5200 /dev/ttyUSB0 ' + HOME_PATH + '/.local/phi.csv ' + '0')
@@ -134,7 +134,7 @@ def speaker_protection_(mode):
         os.system('sudo gpioset 1 93=0')
     elif mode == "OFF":
         os.system('sudo gpioset 1 93=1')
-        time.sleep(.1)
+        time.sleep(.05)
 
 
 ###########################################################################
@@ -589,7 +589,7 @@ def threadEmail(target, subject, text):
 
 
 def authentication_thread():
-    total_minutes = 1
+    total_minutes = 20
     while total_minutes > 0:
         time.sleep(60)
         total_minutes -= 1
@@ -627,6 +627,7 @@ def alarm_thread(mode):
         t1.join()
         if SEND_ACTIVE_UPDATES == "1":
             threadEmail("Normal", "Alarm stopped", "Alarm stopped")
+        time.sleep(30)
 
 # Notes to self:
 # check all css/js links for any that need internet and download them

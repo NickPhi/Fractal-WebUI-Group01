@@ -1,5 +1,5 @@
 from Dashboard import datetime, time, re, os
-from Dashboard.service import readJsonValueFromKey, MODE
+from Dashboard.service import readJsonValueFromKey, MODE, power_supply_amp_, signal_generator_, speaker_protection_
 stop_threads = False
 
 
@@ -17,6 +17,12 @@ def isValidTime(time):
 
 
 def alarm_start():
+    # turn everything off
+    speaker_protection_("OFF")
+    signal_generator_("SIGNAL_OFF")
+    signal_generator_("POWER_OFF")
+    power_supply_amp_("OFF")
+    ##
     filePath = os.path.abspath(os.curdir) + "/Dashboard/_settings/application_data.json"
     user_time = readJsonValueFromKey("USER_ALARM", filePath)
 
@@ -36,6 +42,8 @@ def alarm_start():
     print(datetime.now())
     while True:
         if stop_threads:
+            power_supply_amp_("ON")
+            signal_generator_("POWER_ON")
             break
         now = datetime.now()
 
@@ -51,5 +59,10 @@ def alarm_start():
                         print("Wake Up!")
                         break
     if not stop_threads:
+        power_supply_amp_("ON")
+        signal_generator_("POWER_ON")
+        time.sleep(30)
         MODE("ON")  # for how long
+        time.sleep(float(readJsonValueFromKey("USER_TIMER", filePath)) * 60)
+        MODE("OFF")
     print("Alarm stop")
