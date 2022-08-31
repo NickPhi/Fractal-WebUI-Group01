@@ -9,6 +9,7 @@ def timer_start():
         time.sleep(0.02)
     MODE("ON")
     global stop_threads
+    stop_threads = False
     filePath = os.path.abspath(os.curdir) + "/Dashboard/_settings/application_data.json"
     user_time = readJsonValueFromKey("USER_TIMER", filePath)
     total_seconds = float(user_time) * 60
