@@ -92,7 +92,6 @@ def MODE(mode):
         MODE_RUNNING = True
         MODE_STATE = "ON"
         ON_start = time.time()
-        # speaker_protection_("OFF")  # this may be a problem, if on clicked twice signal gen stays on this is turned off
         signal_generator_("SIGNAL_ON")
         speaker_protection_("ON")
         if SEND_ACTIVE_UPDATES == "1":
@@ -334,9 +333,9 @@ def plug_timer(data):
 
 def plug_alarm(data):
     filePath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/application_data.json"
-    updateJsonFile('USER_ALARM', data['set-time'], filePath)
+    updateJsonFile('USER_ALARM', data, filePath)
     if SEND_ACTIVE_UPDATES == "1":
-        threadEmail("Normal", "Alarm settings updated", str(data['set-time']))
+        threadEmail("Normal", "Alarm settings updated", str(data))
 
 
 def write_update(git, NEW_PRJ_PATH):
@@ -656,7 +655,7 @@ def alarm_thread(mode):
             time.sleep(0.07)
         power_supply_amp_("ON")
         signal_generator_("POWER_ON")
-        time.sleep(30)  # maybe something better
+        time.sleep(2)  # maybe something better
         MODE_RUNNING = False  # allows things to run again
         alarm_state = "OFF"
         if SEND_ACTIVE_UPDATES == "1":

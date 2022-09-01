@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Alarm settings</title>
+    <link rel="stylesheet" href="/static/css/alarm_clock.css">
     <style>
-        .button {
+        .buttonrt {
         border: none;
         color: white;
         padding: 15px 32px;
@@ -22,11 +23,29 @@
     </style>
 </head>
 <body>
-<h1>Set A Time Hour, Minute, PM or AM</h1>
-<form action="{{ url_for('alarm_settings') }}" method="post">
-    <input type="time" name="set-time" style="height:300px;font-size:150pt;"><br/><br/>
-    <button type="submit" class="button button1">Set time & Return</button>
-    </a>
-</form>
+   <div class="wrapper">
+      <div class="content">
+        <div class="column">
+          <select>
+            <option value="Hour" selected disabled hidden>Hour</option>
+          </select>
+        </div>
+        <div class="column">
+          <select>
+            <option value="Minute" selected disabled hidden>Minute</option>
+          </select>
+        </div>
+        <div class="column">
+          <select>
+            <option value="AM/PM" selected disabled hidden>AM/PM</option>
+          </select>
+        </div>
+      </div>
+       <button>Set Alarm</button>
+    </div>
+
+<script src="{{ url_for('static', filename='js/alarm_clock.js') }}"></script>
+
+
 </body>
 </html>

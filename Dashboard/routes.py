@@ -81,7 +81,9 @@ def alarm_settings():
     if request.method == 'GET':
         return render_template('alarm_settings.html')
     if request.method == 'POST':
-        plug_alarm(request.form)
+        data = request.form
+        print(data.get('set-time'))
+        plug_alarm(data.get('set-time'))
         return render_template('index.html')
 
 

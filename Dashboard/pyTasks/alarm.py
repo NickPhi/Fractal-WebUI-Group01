@@ -17,16 +17,29 @@ def isValidTime(time):
         return True
 
 
+def check(text):
+    print(text)
+    pattern = r"^(1[0-2]|0?[1-9]):([0-5]?[0-9])(\s?[AP]M)?$ "
+    result = re.search(pattern, text)
+    return result != None
+
+
 def alarm_start():
     filePath = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '_settings')) + "/application_data.json"
     user_time = readJsonValueFromKey("USER_ALARM", filePath)
 
+    in_time = datetime.strptime(user_time, "%I:%M %p")
+    user_time = datetime.strftime(in_time, "%H:%M")
+
     #  check for correct format
     if isValidTime(user_time):
+        print(user_time)
         t = time.strptime(user_time, "%H:%M")
+        print(t)
         alarm_time = time.strftime("%I:%M:%S %p", t)
         print("Setting alarm for " + alarm_time)
     else:
+        print("ELSE")
         alarm_time = '10:10:10 AM'
         print("Setting alarm for " + alarm_time)
 
@@ -64,3 +77,24 @@ def alarm_start():
             time.sleep(0.02)
         MODE("OFF")
     print("Alarm stop")
+
+
+def convert24(str1):
+    # Checking if last two elements of time
+    # is AM and first two elements are 12
+    if str1[-2:] == "AM" and str1[:2] == "12":
+        return "00" + str1[2:-2]
+
+    # remove the AM
+    elif str1[-2:] == "AM":
+        return str1[:-2]
+
+    # Checking if last two elements of time
+    # is PM and first two elements are 12
+    elif str1[-2:] == "PM" and str1[:2] == "12":
+        return str1[:-2]
+
+    else:
+
+        # add 12 to hours and remove PM
+        return str(int(str1[:2]) + 12) + str1[2:8]
