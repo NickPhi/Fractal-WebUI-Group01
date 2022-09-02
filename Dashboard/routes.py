@@ -1,7 +1,8 @@
 import Dashboard.service
 from Dashboard import app, threading
 from flask import render_template, request, jsonify
-from Dashboard.service import start_index, run_settings, plug_Wifi, plug_timer, plug_alarm, button_controller, MODE
+from Dashboard.service import start_index, run_settings, plug_Wifi, plug_timer, plug_alarm, button_controller, MODE, \
+    run_timer
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -36,23 +37,26 @@ def turnoff():
     return "Complete"
 
 
-#@app.route('/alarm')
-#def alarm():
+# @app.route('/alarm')
+# def alarm():
 #    run_alarm()
 #    return "Complete"
 
 
-#@app.route('/timer')
-#def timer():
-#    run_timer()
-#    return "Complete"
+# @app.route('/timer')
+# def timer():
+#    if request.method == 'POST':
+#        print("called")
+#        run_timer()
+#        return "Complete"
 
 
 @app.route('/settings.html', methods=['GET', 'POST'])
 def settings():
     print(threading.active_count())
     if request.method == 'GET':
-        return render_template("settings.html", response=Dashboard.service.ADMIN_EMAIL + " " + Dashboard.service.ADMIN_PHONE)
+        return render_template("settings.html",
+                               response=Dashboard.service.ADMIN_EMAIL + " " + Dashboard.service.ADMIN_PHONE)
     if request.method == 'POST':
         run_settings(request.form)
         return render_template('index.html')

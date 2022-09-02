@@ -583,6 +583,15 @@ def authentication_thread():
     authentication_thread()
 
 
+def run_timer():
+    if timer_state == "ON":
+        timer_thread("stop")
+    elif timer_state == "OFF":
+        timer_thread("start")
+    else:  # Initialization
+        timer_thread("start")
+
+
 def button_controller(data):
     global alarm_state, timer_state, MODE_RUNNING
     print(data)

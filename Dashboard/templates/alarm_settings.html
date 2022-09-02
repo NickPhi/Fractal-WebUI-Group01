@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Alarm settings</title>
-    <link rel="stylesheet" href="/static/css/alarm_clock.css">
     <style>
+    .who {
+    padding-bottom: 20px;
+    }
         .buttonrt {
         border: none;
         color: white;
@@ -21,9 +23,23 @@
     .button1 {background-color: #008CBA;} /* Blue */
 
     </style>
+    <link rel="stylesheet" href="/static/css/alarm_clock.css">
 </head>
 <body>
    <div class="wrapper">
+       <h2 class="who" id="displayDateTime"></h2>
+       <script type="text/javascript">
+          var date = new Date();
+          var hours = date.getHours();
+          var minutes = date.getMinutes();
+          var ampm = hours >= 12 ? 'pm' : 'am';
+          hours = hours % 12;
+          hours = hours ? hours : 12; // the hour '0' should be '12'
+          minutes = minutes < 10 ? '0'+minutes : minutes;
+          var strTime = hours + ':' + minutes + ' ' + ampm;
+
+          document.getElementById("displayDateTime").innerHTML = 'Current Time: ' + strTime;
+       </script>
       <div class="content">
         <div class="column">
           <select>
