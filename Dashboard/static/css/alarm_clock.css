@@ -1,10 +1,9 @@
 *{
-  margin: 0;
   padding: 0;
   box-sizing: border-box;
   font-family: sans-serif;
 }
-body, .wrapper, .content{
+.whole, .wrapper, .content{
   display: flex;
   align-items: center;
   justify-content: center;
@@ -15,7 +14,7 @@ body{
   background: #4A98F7;
 }
 .wrapper{
-  width: 440px;
+  width: 840px;
   padding: 30px 30px 38px;
   background: #fff;
   border-radius: 10px;

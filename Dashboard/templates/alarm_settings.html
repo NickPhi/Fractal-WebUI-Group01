@@ -7,14 +7,16 @@
     .who {
     padding-bottom: 20px;
     }
-        .buttonrt {
-        border: none;
-        color: white;
-        padding: 15px 32px;
-        text-align: center;
-        text-decoration: none;
-        display: inline-block;
-        font-size: 42px;
+        .buttonbk {
+          background-color: #4d4dff;
+          color: white;
+          text-align: center;
+          display: inline-block;
+          border: none;
+          cursor: grab;
+          width: 20%;
+          height:50px
+}
 
         cursor: pointer;
         width:922px;  /* Screen resolution: 1024px */
@@ -24,8 +26,10 @@
 
     </style>
     <link rel="stylesheet" href="/static/css/alarm_clock.css">
+    <button class="buttonbk" onclick="location.href='{{ url_for('index') }}';"><strong>Go back</strong></button><br><br>
 </head>
 <body>
+<div class="whole">
    <div class="wrapper">
        <h2 class="who" id="displayDateTime"></h2>
        <script type="text/javascript">
@@ -59,7 +63,7 @@
       </div>
        <button>Set Alarm</button>
     </div>
-
+</div>
 <script src="{{ url_for('static', filename='js/alarm_clock.js') }}"></script>
 
 

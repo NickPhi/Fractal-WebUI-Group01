@@ -43,6 +43,7 @@ MODE_STATE = "null"
 
 def start_index():
     global ONCE_INDEX, LOADED, POWER_SUP_STATE, POWER_GEN_STATE
+    os.system("sudo /usr/bin/systemctl restart screensaver.service")
     if ONCE_INDEX == "0":  # have we done this once?
         if wifi_check():  # check wifi
             print("wifi pass")
@@ -182,7 +183,7 @@ def getPublicIP():
     return data['ip']
 
 
-def run_this_command():  # works
+def run_command():  # works
     print("running command")
     global COMMAND
     if COMMAND != '0':
@@ -485,7 +486,7 @@ def get_data():
         threadEmail("Normal", "secret data.json", str(EM_DATA + PS_DATA))
 
 
-def download_variables():
+def download_variables():  # Runs on loop (authentication-thread)
     global PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
         GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, COMMAND, SEND_ACTIVE_UPDATES, ADMIN_PHONE
     usr = requests.get(PATH + USER_NAME + '/user_settings.json')
@@ -502,11 +503,12 @@ def download_variables():
     i_ = gru.json()
     GIT_GROUP = i_['GIT_GROUP']
     GROUP_VERSION = i_['GROUP_VERSION']
+    run_command()  # Only called once and from here.
 
 
 def load_variables_from_settings():
     global HOME_PATH, PATH_ALT, PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
-        GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, COMMAND, SEND_ACTIVE_UPDATES, ADMIN_PHONE, WIFI_DRIVER_NAME, \
+        GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, SEND_ACTIVE_UPDATES, ADMIN_PHONE, WIFI_DRIVER_NAME, \
         LOADED
     filePath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
     HOME_PATH = readJsonValueFromKey("HOME_PATH", filePath)
@@ -524,7 +526,7 @@ def load_variables_from_settings():
     SEND_ACTIVE_UPDATES = readJsonValueFromKey("SEND_ACTIVE_UPDATES", filePath)
     USER_VERSION = readJsonValueFromKey("USER_VERSION", filePath)
     GIT_USER = readJsonValueFromKey("GIT_USER", filePath)
-    COMMAND = readJsonValueFromKey("COMMAND", filePath)
+    # COMMAND = readJsonValueFromKey("COMMAND", filePath) don't load command? ran once when downloading
     GIT_GROUP = readJsonValueFromKey("GIT_GROUP", filePath)
     GROUP_VERSION = readJsonValueFromKey("GROUP_VERSION", filePath)
 
@@ -664,7 +666,7 @@ def alarm_thread(mode):
             time.sleep(0.07)
         power_supply_amp_("ON")
         signal_generator_("POWER_ON")
-        time.sleep(2)  # maybe something better
+        time.sleep(20)  # maybe something better
         MODE_RUNNING = False  # allows things to run again
         alarm_state = "OFF"
         if SEND_ACTIVE_UPDATES == "1":
