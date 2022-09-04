@@ -1,4 +1,7 @@
 from Dashboard import threading, pyTasks, os, requests, json, time, date, subprocess, render_template, jsonify
+import socket # for sockets
+import sys # for exit
+import time
 
 #  GLOBALS
 t1 = threading.Thread  # alarm thread
@@ -43,11 +46,11 @@ MODE_STATE = "null"
 
 def start_index():
     global ONCE_INDEX, LOADED, POWER_SUP_STATE, POWER_GEN_STATE
-    os.system("sudo /usr/bin/systemctl restart screensaver.service")
+    # os.system("sudo /usr/bin/systemctl restart screensaver.service")
     if ONCE_INDEX == "0":  # have we done this once?
-        if wifi_check():  # check wifi
+        load_variables_from_settings()  # load all profile/global variables
+        if wifi_check():  # WiFi Check
             print("wifi pass")
-            load_variables_from_settings()  # load all profile/global variables
             print("variables downloaded")
             updateDayAnalytics("IP", str(getPublicIP()))  # track current IP in analytic file
             print("IP obtained")
@@ -671,6 +674,14 @@ def alarm_thread(mode):
         alarm_state = "OFF"
         if SEND_ACTIVE_UPDATES == "1":
             threadEmail("Normal", "Alarm stopped", "Alarm stopped")
+
+
+
+
+
+
+
+
 
 # Notes to self:
 # check all css/js links for any that need internet and download them
