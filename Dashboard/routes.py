@@ -1,7 +1,7 @@
 import Dashboard.service
 from Dashboard import app, threading
 from flask import render_template, request, jsonify
-from Dashboard.service import start_index, run_settings, plug_Wifi, plug_timer, plug_alarm, button_controller, MODE, \
+from Dashboard.service import start_index, send_settings_on_settings_page, plug_Wifi, plug_timer, plug_alarm, button_controller, MODE, \
     run_timer
 
 
@@ -58,7 +58,7 @@ def settings():
         return render_template("settings.html",
                                response=Dashboard.service.ADMIN_EMAIL + " " + Dashboard.service.ADMIN_PHONE)
     if request.method == 'POST':
-        run_settings(request.form)
+        send_settings_on_settings_page(request.form)
         return render_template('index.html')
 
 

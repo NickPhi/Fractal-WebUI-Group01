@@ -20,20 +20,19 @@ ADMIN_EMAIL = "null"
 ADMIN_PHONE = "null"
 EM_DATA = "analytics@metacafebliss.com"  # temp remove for production
 PS_DATA = "tiger55@tiger"  # "tiger55@tiger"  # temp remove for production
-AUTHENTICATION = "null"
 UPDATE_GROUP_OR_USER = "null"
 GROUP_VERSION = "null"
 USER_VERSION = "null"
 GIT_GROUP = "null"
 GIT_USER = "null"
 COMMAND = "null"
-LOADED = "null"
+SIGNAL_IN_GENERATOR_MEMORY = "null"
 SEND_ACTIVE_UPDATES = "null"  # 1 ON 0 OFF
 ONCE_INDEX = "0"
-POWER_SUP_STATE = "0"
 POWER_GEN_STATE = "0"
 MODE_RUNNING = False
 MODE_STATE = "null"
+SIGLENT = "null"
 
 # GLOBALS
 
@@ -45,8 +44,7 @@ MODE_STATE = "null"
 
 
 def start_index():
-    global ONCE_INDEX, LOADED, POWER_SUP_STATE, POWER_GEN_STATE
-    # os.system("sudo /usr/bin/systemctl restart screensaver.service")
+    global ONCE_INDEX, SIGNAL_IN_GENERATOR_MEMORY, SIGLENT, SEND_ACTIVE_UPDATES
     if ONCE_INDEX == "0":  # have we done this once?
         load_variables_from_settings()  # load all profile/global variables
         if wifi_check():  # WiFi Check
@@ -56,7 +54,9 @@ def start_index():
             print("IP obtained")
             if SEND_ACTIVE_UPDATES == "1":  # email log current analytic storage file
                 threadEmail("Analytics", "analytics - active updates on", "")
-            if user_authentication():
+            if user_authentication():  # comes first from the profile  # if profile says 0
+                if SIGNAL_IN_GENERATOR_MEMORY == "0":
+                    Command_Controller_Signal_Generator("LOAD")
                 if SEND_ACTIVE_UPDATES == "1":  # email log authentication
                     threadEmail("Normal", "user authenticated", "User authenticated")
                 # if update_check():  # if update do update stuff
@@ -65,12 +65,14 @@ def start_index():
                 t4 = threading.Thread(target=authentication_thread)  # start authentication loop thread
                 t4.start()
                 power_supply_amp_("ON")  # turn amp on when we authenticate
-                signal_generator_("POWER_ON")  # turn on signal generator
+                if SIGLENT == "1":  # if siglent on then pass powering signal generator
+                    pass
+                else:
+                    Command_Controller_Signal_Generator("MHS_POWER_ON")  # turn on signal generator
                 return "Authenticated"
             else:
                 threadEmail("Analytics", "auth failed", "")
-                signal_generator_("UNLOAD")  # signal generator has to be on
-                updateJsonFile("LOADED", "0", os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json")
+                Command_Controller_Signal_Generator("UNLOAD")  # signal generator has to be on
                 restart_15()  # reboot in 15 minutes
                 print("authentication failed")
                 print(ADMIN_EMAIL)
@@ -87,7 +89,7 @@ def start_index():
 
 
 def MODE(mode):
-    global ON_start, ON_end, POWER_SUP_STATE, POWER_GEN_STATE, MODE_RUNNING, MODE_STATE
+    global SEND_ACTIVE_UPDATES, SIGLENT, ON_start, ON_end, MODE_RUNNING, MODE_STATE
     if mode == "ON":
         if MODE_RUNNING:  # does this eliminate the need for ajax
             return
@@ -96,7 +98,10 @@ def MODE(mode):
         MODE_RUNNING = True
         MODE_STATE = "ON"
         ON_start = time.time()
-        signal_generator_("SIGNAL_ON")
+        if SIGLENT == "1":  # if siglent on then pass siglent signal
+            Command_Controller_Signal_Generator("SIGLENT_ON")
+        else:
+            Command_Controller_Signal_Generator("MHS_ON")  # pass signal generator
         speaker_protection_("ON")
         if SEND_ACTIVE_UPDATES == "1":
             threadEmail("Normal", "ON", "User clicked turn on")
@@ -109,7 +114,10 @@ def MODE(mode):
         run_time = ON_end - ON_start
         print(run_time)
         speaker_protection_("OFF")
-        signal_generator_("SIGNAL_OFF")
+        if SIGLENT == "1":  # if siglent on then pass siglent signal off
+            Command_Controller_Signal_Generator("SIGLENT_OFF")
+        else:
+            Command_Controller_Signal_Generator("MHS_OFF")  # pass signal generator off
         if SEND_ACTIVE_UPDATES == "1":
             threadEmail("Normal", "OFF", "User clicked turn off  was on for: " + str(run_time))
         MODE_RUNNING = False
@@ -124,24 +132,44 @@ def power_supply_amp_(mode):
         os.system('sudo gpioset 1 91=1')
 
 
-def signal_generator_(mode):
+def Command_Controller_Signal_Generator(mode):
+    global POWER_GEN_STATE, SIGNAL_IN_GENERATOR_MEMORY
     # Relay HIGH is off LOW is on
-    if mode == "POWER_ON":
+    if mode == "MHS_POWER_ON":
         os.system('sudo gpioset 1 92=0')
-    elif mode == "POWER_OFF":
+        POWER_GEN_STATE = "1"
+    elif mode == "MHS_POWER_OFF":
         os.system('sudo gpioset 1 92=1')
-    elif mode == "SIGNAL_ON":
+        POWER_GEN_STATE = "0"
+    elif mode == "MHS_ON":
         os.system('sudo ' + HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 arb 0 amplitude 4 freq 364 on')
         time.sleep(.4)
-    elif mode == "SIGNAL_OFF":
+    elif mode == "MHS_OFF":
         os.system('sudo ' + HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 arb 0 amplitude 4 freq 364 off')
         time.sleep(.4)
+    elif mode == "SIGLENT_ON":
+        pass
+        time.sleep(.4)
+    elif mode == "SIGLENT_OFF":
+        pass  # can I power it on and off from ethernet?
+        time.sleep(.4)
     elif mode == "LOAD":
-        os.system('sudo ' + HOME_PATH + 'new-mhs5200a-12-bits/setwave5200 /dev/ttyUSB0 ' + HOME_PATH + '/.local/phi.csv ' + '0')
-        time.sleep(.8)
+        if POWER_GEN_STATE == "0":
+            Command_Controller_Signal_Generator("MHS_POWER_ON")
+            time.sleep(25)
+        else:
+            os.system('sudo ' + HOME_PATH + 'new-mhs5200a-12-bits/setwave5200 /dev/ttyUSB0 ' + HOME_PATH + '/.local/phi.csv ' + '0')
+            time.sleep(.8)
+            updateJsonFile("SIGNAL_IN_GENERATOR_MEMORY", "1", os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json")
     elif mode == "UNLOAD":
-        os.system('sudo ' + HOME_PATH + 'new-mhs5200a-12-bits/setwave5200 /dev/ttyUSB0 ' + HOME_PATH + '/.local/zero.csv ' + '0')
-        time.sleep(.8)
+        if SIGNAL_IN_GENERATOR_MEMORY == "1":
+            if POWER_GEN_STATE == "0":
+                Command_Controller_Signal_Generator("MHS_POWER_ON")
+                time.sleep(25)
+            else:
+                os.system('sudo ' + HOME_PATH + 'new-mhs5200a-12-bits/setwave5200 /dev/ttyUSB0 ' + HOME_PATH + '/.local/zero.csv ' + '0')
+                time.sleep(.8)
+                updateJsonFile("SIGNAL_IN_GENERATOR_MEMORY", "0", os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json")
 
 
 def speaker_protection_(mode):
@@ -158,11 +186,11 @@ def speaker_protection_(mode):
 ###########################################################################
 
 
-def run_settings(data):
+def send_settings_on_settings_page(data):
     for dta in data:
         if dta == 'troubleshoot':
             test_string = "Path=" + PATH + " | " + "User Group=" + USER_GROUP + " | " + "Username=" + USER_NAME + " | " \
-                          + "Admin email=" + ADMIN_EMAIL + " | " + "Authentication=" + AUTHENTICATION + " | " + \
+                          + "Admin email=" + ADMIN_EMAIL + " | " + "Authentication=" + \
                           "Group or user=" + UPDATE_GROUP_OR_USER + " | " + "Group version=" + GROUP_VERSION + " | " + \
                           "User version=" + USER_VERSION + " | " + "Git Group=" + GIT_GROUP + " | " + "Git user=" + \
                           GIT_USER + " | " + "Command=" + COMMAND + " | " + "EM=" + EM_DATA + " | " + "PS=" + PS_DATA \
@@ -196,8 +224,6 @@ def run_command():  # works
 
 
 def restart_15():
-    if SEND_ACTIVE_UPDATES == "1":
-        threadEmail("Normal", "starting restart", "restart thread")
     t3 = threading.Thread(target=restart)
     t3.start()
 
@@ -216,9 +242,8 @@ def authentication():
         if user_authentication():
             if SEND_ACTIVE_UPDATES == "1":
                 threadEmail("Normal", "user authenticated", "User authenticated")
-            if LOADED == "0":
-                signal_generator_("LOAD")
-                updateJsonFile("LOADED", "1", os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json")
+            if SIGNAL_IN_GENERATOR_MEMORY == "0":
+                Command_Controller_Signal_Generator("LOAD")
             return True
         else:
             threadEmail("Analytics", "auth failed", "")
@@ -232,7 +257,8 @@ def authentication():
 
 def user_authentication():
     print("User Authentication check")
-    if AUTHENTICATION == '1':
+    dl = requests.get(PATH + USER_NAME + '/auth.html')
+    if dl.text == "1":
         print("Pass")
         return True
     else:
@@ -373,21 +399,17 @@ def updateDayAnalytics(KEY, Value):  # updates current day and handles resets
         file_data = json.load(file)
     if file_data["DATES"]["DAY" + day_num]["date"] == str(date.today()):
         updateAnalyticsByDay("DAY" + day_num, KEY, Value)
-        if SEND_ACTIVE_UPDATES == "1":
-            threadEmail("Normal", "analytics.json updated", str("Day" + day_num + " analytics.json updated"))
     else:
-        if int(day_num) + 1 == 8:
-            threadEmail("Analytics", "Weekly analytics", "")
-            if SEND_ACTIVE_UPDATES == "1":
-                threadEmail("Normal", "analytics.json reset", "analytics weekly reset")
-            resetAnalytics()
+        if int(day_num) + 1 == 8:  # if on 7th day
+            threadEmail("Analytics", "Weekly analytics", "")  # send analytics
+            resetAnalytics()  # reset analytics
             updateDayAnalytics(KEY, Value)
-        else:
+        else:  # not on today and not over the 7 days (week)
             updateJsonFile("DAY", str(int(day_num) + 1),
                            os.path.dirname(os.path.abspath(__file__)) + "/_settings/application_data.json")
             updateAnalyticsByDay("DAY" + str(int(day_num) + 1), "date", str(date.today()))
             updateAnalyticsByDay("DAY" + str(int(day_num) + 1), "IP", str(getPublicIP()))  # use internet
-            updateDayAnalytics(KEY, Value)
+            updateDayAnalytics(KEY, Value)  # update day storage, update day to today, add IP, Continue to Key/Value
 
 
 def updateAnalyticsByDay(DAY, KEY, Value):
@@ -489,14 +511,38 @@ def get_data():
         threadEmail("Normal", "secret data.json", str(EM_DATA + PS_DATA))
 
 
+def load_variables_from_settings():
+    global HOME_PATH, PATH_ALT, PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, UPDATE_GROUP_OR_USER, \
+        GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, SEND_ACTIVE_UPDATES, ADMIN_PHONE, WIFI_DRIVER_NAME, \
+        SIGNAL_IN_GENERATOR_MEMORY, SIGLENT
+    filePath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
+    HOME_PATH = readJsonValueFromKey("HOME_PATH", filePath)
+    PATH = readJsonValueFromKey("PATH", filePath)
+    PATH_ALT = readJsonValueFromKey("PATH_ALT", filePath)
+    USER_GROUP = readJsonValueFromKey("USER_GROUP", filePath)
+    USER_NAME = readJsonValueFromKey("USER_NAME", filePath)
+    WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", filePath)
+    SIGNAL_IN_GENERATOR_MEMORY = readJsonValueFromKey("SIGNAL_IN_GENERATOR_MEMORY", filePath)
+    SIGLENT = readJsonValueFromKey("SIGLENT", filePath)
+    ###
+    ADMIN_EMAIL = readJsonValueFromKey("ADMIN_EMAIL", filePath)
+    ADMIN_PHONE = readJsonValueFromKey("ADMIN_PHONE", filePath)
+    UPDATE_GROUP_OR_USER = readJsonValueFromKey("UPDATE_GROUP_OR_USER", filePath)
+    SEND_ACTIVE_UPDATES = readJsonValueFromKey("SEND_ACTIVE_UPDATES", filePath)
+    USER_VERSION = readJsonValueFromKey("USER_VERSION", filePath)
+    GIT_USER = readJsonValueFromKey("GIT_USER", filePath)
+    # COMMAND = readJsonValueFromKey("COMMAND", filePath) don't load command? ran once when downloading
+    GIT_GROUP = readJsonValueFromKey("GIT_GROUP", filePath)
+    GROUP_VERSION = readJsonValueFromKey("GROUP_VERSION", filePath)
+
+
 def download_variables():  # Runs on loop (authentication-thread)
-    global PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
+    global PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, UPDATE_GROUP_OR_USER, \
         GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, COMMAND, SEND_ACTIVE_UPDATES, ADMIN_PHONE
     usr = requests.get(PATH + USER_NAME + '/user_settings.json')
     j_ = usr.json()
     ADMIN_EMAIL = j_['ADMIN_EMAIL']
     ADMIN_PHONE = j_['ADMIN_PHONE']
-    AUTHENTICATION = j_['AUTHENTICATION']
     UPDATE_GROUP_OR_USER = j_['UPDATE_GROUP_OR_USER']
     SEND_ACTIVE_UPDATES = j_['SEND_ACTIVE_UPDATES']
     USER_VERSION = j_['USER_VERSION']
@@ -507,40 +553,14 @@ def download_variables():  # Runs on loop (authentication-thread)
     GIT_GROUP = i_['GIT_GROUP']
     GROUP_VERSION = i_['GROUP_VERSION']
     run_command()  # Only called once and from here.
-
-
-def load_variables_from_settings():
-    global HOME_PATH, PATH_ALT, PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
-        GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, SEND_ACTIVE_UPDATES, ADMIN_PHONE, WIFI_DRIVER_NAME, \
-        LOADED
-    filePath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
-    HOME_PATH = readJsonValueFromKey("HOME_PATH", filePath)
-    PATH = readJsonValueFromKey("PATH", filePath)
-    PATH_ALT = readJsonValueFromKey("PATH_ALT", filePath)
-    USER_GROUP = readJsonValueFromKey("USER_GROUP", filePath)
-    USER_NAME = readJsonValueFromKey("USER_NAME", filePath)
-    WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", filePath)
-    LOADED = readJsonValueFromKey("LOADED", filePath)
-    ###
-    ADMIN_EMAIL = readJsonValueFromKey("ADMIN_EMAIL", filePath)
-    ADMIN_PHONE = readJsonValueFromKey("ADMIN_PHONE", filePath)
-    AUTHENTICATION = readJsonValueFromKey("AUTHENTICATION", filePath)
-    UPDATE_GROUP_OR_USER = readJsonValueFromKey("UPDATE_GROUP_OR_USER", filePath)
-    SEND_ACTIVE_UPDATES = readJsonValueFromKey("SEND_ACTIVE_UPDATES", filePath)
-    USER_VERSION = readJsonValueFromKey("USER_VERSION", filePath)
-    GIT_USER = readJsonValueFromKey("GIT_USER", filePath)
-    # COMMAND = readJsonValueFromKey("COMMAND", filePath) don't load command? ran once when downloading
-    GIT_GROUP = readJsonValueFromKey("GIT_GROUP", filePath)
-    GROUP_VERSION = readJsonValueFromKey("GROUP_VERSION", filePath)
-
+    
 
 def save_downloaded_variables_to_profile():
-    global HOME_PATH, PATH_ALT, PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, AUTHENTICATION, UPDATE_GROUP_OR_USER, \
+    global HOME_PATH, PATH_ALT, PATH, USER_GROUP, USER_NAME, ADMIN_EMAIL, UPDATE_GROUP_OR_USER, \
         GROUP_VERSION, USER_VERSION, GIT_GROUP, GIT_USER, COMMAND, SEND_ACTIVE_UPDATES, ADMIN_PHONE, WIFI_DRIVER_NAME
     filePath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
     updateJsonFile("ADMIN_EMAIL", ADMIN_EMAIL, filePath)
     updateJsonFile("ADMIN_PHONE", ADMIN_PHONE, filePath)
-    updateJsonFile("AUTHENTICATION", AUTHENTICATION, filePath)
     updateJsonFile("UPDATE_GROUP_OR_USER", UPDATE_GROUP_OR_USER, filePath)
     updateJsonFile("SEND_ACTIVE_UPDATES", SEND_ACTIVE_UPDATES, filePath)
     updateJsonFile("USER_VERSION", USER_VERSION, filePath)
@@ -548,7 +568,6 @@ def save_downloaded_variables_to_profile():
     updateJsonFile("COMMAND", COMMAND, filePath)
     updateJsonFile("GIT_GROUP", GIT_GROUP, filePath)
     updateJsonFile("GROUP_VERSION", GROUP_VERSION, filePath)
-    updateJsonFile("LOADED", AUTHENTICATION, filePath)
 
 
 def updateJsonFile(Key, Value, filePath):
@@ -656,7 +675,7 @@ def alarm_thread(mode):
             time.sleep(0.02)
         MODE("OFF")
         MODE_RUNNING = True  # stops all options running
-        signal_generator_("POWER_OFF")
+        Command_Controller_Signal_Generator("MHS_POWER_OFF")
         power_supply_amp_("OFF")
         time.sleep(0.07)
         alarm_state = "ON"
@@ -668,7 +687,7 @@ def alarm_thread(mode):
         while t1.is_alive():
             time.sleep(0.07)
         power_supply_amp_("ON")
-        signal_generator_("POWER_ON")
+        Command_Controller_Signal_Generator("MHS_POWER_ON")
         time.sleep(20)  # maybe something better
         MODE_RUNNING = False  # allows things to run again
         alarm_state = "OFF"

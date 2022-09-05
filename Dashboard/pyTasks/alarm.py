@@ -1,6 +1,6 @@
 import Dashboard.service
 from Dashboard import datetime, time, re, os
-from Dashboard.service import readJsonValueFromKey, MODE, power_supply_amp_, signal_generator_, MODE_RUNNING
+from Dashboard.service import readJsonValueFromKey, MODE, power_supply_amp_, Command_Controller_Signal_Generator, MODE_RUNNING
 stop_threads = False
 
 
@@ -66,7 +66,7 @@ def alarm_start():
                         break
     if not stop_threads:
         power_supply_amp_("ON")
-        signal_generator_("POWER_ON")
+        Command_Controller_Signal_Generator("MHS_POWER_ON")
         time.sleep(30)
         Dashboard.service.MODE_RUNNING = False
         while MODE_RUNNING:
